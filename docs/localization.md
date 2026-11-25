@@ -62,7 +62,7 @@ German labels keep nouns capitalized, including tool names inserted into notices
 
 ## How translations work
 
-PdfCraft reads its translations from [craft-i18n](https://github.com/storytold/craft-i18n), shared by the Crafting Apps, through the `craft-i18n` crate (`crates/ui-egui/src/i18n.rs` is a thin wrapper):
+PdfCraft reads its translations from [craft-i18n](https://github.com/storytold/craft-i18n), shared by the Craft apps, through the `craft-i18n` crate (`crates/ui-egui/src/i18n.rs` is a thin wrapper):
 
 - Strings in the code stay in English and serve as lookup keys. At draw time, `tl!("Save")` returns the text in the current language, and falls back to English when there is no entry.
 - Each language has two catalogs in craft-i18n: `locales/<code>/common.tsv` (rows every app shares) and `locales/<code>/pdfcraft.tsv` (PdfCraft's own rows, which win over shared ones). One entry per line: `context<TAB>English<TAB>translation`. An empty context marks a plain string. `@id` keys an entry by command id (for example `file.saveAs`); PdfCraft reads `@id` rows only from `pdfcraft.tsv`. `@plural` holds plural forms, chosen by CLDR rules. Any other context disambiguates an English word with several meanings (`tl_ctx!` in UI code). craft-i18n's `docs/integration.md` documents the format and escapes.

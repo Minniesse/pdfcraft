@@ -718,8 +718,8 @@ fn tabs_shrink_to_fit_then_arrows_step_through_them_and_open_stays_in_sight() {
         }
     });
     let open = h.get_by_label("Open…").rect();
-    let discord = h.get_by_label("Discord").rect();
-    assert!(open.right() <= discord.left(), "Open {open:?} must not run under Discord {discord:?}");
+    let shortcuts = h.get_by_label("Keyboard shortcuts").rect();
+    assert!(open.right() <= shortcuts.left(), "Open {open:?} must not run under Keyboard shortcuts {shortcuts:?}");
     let mut previous_right = f32::MIN;
     for i in 0..5 {
         let tab = h.get_by_role_and_label(egui::accesskit::Role::Tab, &name(i)).rect();
@@ -727,22 +727,22 @@ fn tabs_shrink_to_fit_then_arrows_step_through_them_and_open_stays_in_sight() {
         assert!(tab.right() <= open.left() + 0.5, "every tab fits before Open: {i} at {tab:?}, Open at {open:?}");
         previous_right = tab.right();
     }
-    // Seven and twenty tabs: Open stays in sight left of Discord.
+    // Seven and twenty tabs: Open stays in sight left of Keyboard shortcuts.
     for i in 5..7 {
         let ctx_h = h.ctx.clone();
         h.state_mut().open_bytes(&ctx_h, &name(i), None, FIXTURE.to_vec()).unwrap();
     }
     h.run_steps(6);
-    let (open, discord) = (h.get_by_label("Open…").rect(), h.get_by_label("Discord").rect());
-    assert!(open.right() <= discord.left(), "Open {open:?} stays left of Discord {discord:?} with seven tabs");
+    let (open, shortcuts) = (h.get_by_label("Open…").rect(), h.get_by_label("Keyboard shortcuts").rect());
+    assert!(open.right() <= shortcuts.left(), "Open {open:?} stays left of Keyboard shortcuts {shortcuts:?} with seven tabs");
     for i in 0..13 {
         let ctx_h = h.ctx.clone();
         h.state_mut().open_bytes(&ctx_h, &format!("more-{i:02}.pdf"), None, FIXTURE.to_vec()).unwrap();
     }
     h.run_steps(4);
     let open = h.get_by_label("Open…").rect();
-    let discord = h.get_by_label("Discord").rect();
-    assert!(open.left() > 0.0 && open.right() <= discord.left(), "Open {open:?} stays in sight left of Discord {discord:?}");
+    let shortcuts = h.get_by_label("Keyboard shortcuts").rect();
+    assert!(open.left() > 0.0 && open.right() <= shortcuts.left(), "Open {open:?} stays in sight left of Keyboard shortcuts {shortcuts:?}");
 }
 
 #[test]
