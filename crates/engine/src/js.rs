@@ -1682,7 +1682,8 @@ mod review_tests {
     }
 }
 
-#[cfg(all(test, feature = "js"))]
+#[cfg(test)]
+#[cfg(feature = "js")]
 mod caption_tests {
     use super::*;
 
@@ -2260,7 +2261,8 @@ mod widget_budget_review_tests {
     }
 }
 
-#[cfg(all(test, feature = "js"))]
+#[cfg(test)]
+#[cfg(feature = "js")]
 mod icon_mixed_review_tests {
     use super::*;
     /// Mixed widgets need a field-wide icon delta even when the first icon is already correct.

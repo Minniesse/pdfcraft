@@ -415,6 +415,7 @@ impl Document {
     }
 }
 
-#[cfg(all(test, feature = "js"))]
+#[cfg(test)]
+#[cfg(feature = "js")]
 #[path = "live_scripts_tests.rs"]
 mod tests;

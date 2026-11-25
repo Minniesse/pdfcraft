@@ -210,7 +210,8 @@ pub const MAX_STAMP_LINE: usize = 200;
 
 #[cfg(test)]
 mod document_actions_tests;
-#[cfg(all(test, feature = "js"))]
+#[cfg(test)]
+#[cfg(feature = "js")]
 mod link_javascript_tests;
 #[cfg(test)]
 mod tests;

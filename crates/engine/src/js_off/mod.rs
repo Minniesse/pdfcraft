@@ -37,6 +37,26 @@ fn not_run(event: &Event) -> Outcome {
 /// No script engine, so no date names to set.
 pub fn set_date_names(_: [&'static str; 12], _: [&'static str; 12], _: [&'static str; 7], _: [&'static str; 7]) {}
 
+/// No script engine, so no date language: `run` runs as it is (the web build's calculate path).
+#[cfg(target_arch = "wasm32")]
+pub fn with_english_printd<R>(_english: bool, run: impl FnOnce() -> R) -> R {
+    run()
+}
+
+/// The web build's calculate path: runs nothing.
+#[cfg(target_arch = "wasm32")]
+pub fn run_shared_calculations(
+    _script: &str,
+    event: &Event,
+    _doc: &DocInfo,
+    _fields: std::sync::Arc<Vec<FieldState>>,
+    _doc_scripts: &[String],
+    _calculations: &[(usize, String)],
+    _limits: Limits,
+) -> Outcome {
+    not_run(event)
+}
+
 pub mod interaction {
     pub use super::model::{InteractiveEvent, MenuItem, Prompt};
 }

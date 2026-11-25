@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 
-use pdfcraft_engine::Session;
+use pdfcraft_engine::{Edit, Session};
 
 #[test]
 fn javascript_stays_off_and_xfa_scripts_never_run_on_open() {
@@ -26,4 +26,16 @@ fn javascript_stays_off_and_xfa_scripts_never_run_on_open() {
         let e = s.run_javascript(id, "", Some("addRow")).unwrap_err().to_string();
         assert!(e.contains(pdfcraft_engine::js::NOT_AVAILABLE), "a button's click script: {e}");
     }
+}
+
+#[test]
+fn a_script_inside_a_batch_is_refused_and_nothing_is_stored() {
+    let mut s = Session::new().with_clock(|| 1_700_000_000);
+    let id = s.open("form.pdf", None, Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template())), None).expect("opens");
+    let dirty = s.get(id).unwrap().dirty;
+    let script = Edit::SetDocumentScript { name: "init".into(), script: Some("app.alert(1);".into()) };
+    let batch = Edit::Batch { label: "Several".into(), edits: vec![script] };
+    let e = s.apply(id, batch).unwrap_err().to_string();
+    assert!(e.contains(pdfcraft_engine::js::NOT_AVAILABLE), "{e}");
+    assert_eq!(s.get(id).unwrap().dirty, dirty, "nothing was stored");
 }
