@@ -1591,6 +1591,7 @@ mod revert_draft_tests {
 
     /// Revert drops the focus without running the exit of the field that had it: the document
     /// is the saved one again, and nothing changes it after.
+    #[cfg(feature = "js")]
     #[test]
     fn revert_runs_no_exit_for_the_field_that_had_the_focus() {
         let mut app = PdfCraftApp::for_unit_tests();
@@ -1613,6 +1614,7 @@ mod revert_draft_tests {
 
     /// A focus move whose scripts the frame hasn't run yet (Save pressed as the focus reaches a
     /// field) runs them before anything reads the document: `hint`'s enter clears its "Type here".
+    #[cfg(feature = "js")]
     #[test]
     fn committing_the_form_runs_the_focus_scripts_of_a_move_not_yet_run() {
         let mut app = PdfCraftApp::for_unit_tests();
@@ -1638,6 +1640,7 @@ mod revert_draft_tests {
     }
     /// A pointer trigger whose script changes the field being edited shows the change in its
     /// editor, unless the user already typed there: then the typed draft is kept.
+    #[cfg(feature = "js")]
     #[test]
     fn a_pointer_trigger_changing_the_edited_field_refreshes_an_untouched_draft() {
         let objs = [

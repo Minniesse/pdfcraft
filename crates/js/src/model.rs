@@ -190,7 +190,7 @@ pub struct DocInfo {
     pub zoom: f64,
     pub runtime_highlight: bool,
     /// The document's layers (optional content groups), for `getOCGs`, in the viewer's order.
-    pub layers: Vec<crate::Layer>,
+    pub layers: Vec<Layer>,
 }
 
 /// The icon a script's message shows: `app.alert`'s `nIcon` and `xfa.host.messageBox`'s
@@ -410,7 +410,7 @@ pub struct Outcome {
     pub result: Option<String>,
     /// The timers of a document's retained realm as they stand after the run, in the order they
     /// were set (`app.setInterval`, `app.setTimeOut`); none from a one-off run.
-    pub timers: Vec<crate::Timer>,
+    pub timers: Vec<Timer>,
     /// Layers the script turned on or off (`ocg.state`), as they are now: their places in
     /// [`DocInfo::layers`], and whether each is on.
     pub layers: Vec<(usize, bool)>,
@@ -427,4 +427,61 @@ impl Default for Limits {
     fn default() -> Self {
         Limits { loop_iterations: 1_000_000, recursion: 256 }
     }
+}
+
+/// A layer as `getOCGs` shows it.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Layer {
+    pub name: String,
+    /// Shown now (`ocg.state`).
+    pub on: bool,
+    /// Shown as the file opens (`ocg.initState`).
+    pub initial: bool,
+}
+
+/// A timer a script set, as the realm reports it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Timer {
+    /// The realm's name for it, never reused while the realm lives.
+    pub id: u32,
+    /// Milliseconds between runs (`setInterval`) or before the one run (`setTimeOut`), at least
+    /// `MIN_TIMER_MS`.
+    pub period_ms: u32,
+    /// `setInterval`: it runs until it is cleared. `setTimeOut`: once.
+    pub repeat: bool,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct MenuItem {
+    pub name: String,
+    pub value: String,
+    pub enabled: bool,
+    pub marked: bool,
+    pub children: Vec<MenuItem>,
+}
+#[derive(Clone, Debug, PartialEq)]
+pub enum Prompt {
+    Menu(Vec<MenuItem>),
+    Text { title: String, question: String, default: String, password: bool, label: String },
+    Alert(Message),
+}
+pub enum InteractiveEvent {
+    Prompt(Prompt, std::sync::mpsc::Sender<Option<String>>),
+    Complete(Outcome),
+}
+
+/// One event snapshot; the worker owns its context and refreshes this data between invocations.
+#[derive(Clone)]
+pub struct Job {
+    pub script: String,
+    pub event: Event,
+    pub doc: DocInfo,
+    pub fields: std::sync::Arc<Vec<FieldState>>,
+    pub doc_scripts: Vec<String>,
+    /// Target positions in this job's field snapshot and their ordered script sources.
+    pub calculations: Vec<(usize, String)>,
+    /// Fire this timer of the realm (`app.setInterval`, `app.setTimeOut`) in place of `script`
+    /// (#169). A timer the realm no longer has runs nothing; nor does any timer of a realm that
+    /// has not started, or whose document scripts changed (its timers went with it).
+    pub timer: Option<u32>,
 }

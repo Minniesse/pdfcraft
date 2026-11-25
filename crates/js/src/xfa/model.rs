@@ -52,7 +52,7 @@ pub struct XfaNode {
     pub formatted: Option<String>,
     /// The template's attributes and property elements of the object (border, ui, validate, …),
     /// shared: snapshots taken for each script point at the same tree.
-    pub props: std::sync::Arc<super::XfaProps>,
+    pub props: std::sync::Arc<XfaProps>,
 }
 
 /// The event a script runs for.
@@ -110,7 +110,7 @@ pub enum XfaEffect {
         open: bool,
     },
     /// `app.execMenuItem("ShowHide…")`: show or hide a side panel.
-    ShowPanel(crate::Panel),
+    ShowPanel(super::Panel),
     Print,
     SaveAs,
     LaunchUrl(String),
@@ -246,4 +246,36 @@ pub(crate) fn clip_result(out: &mut XfaOutcome) {
         }
         out.result = Some(r);
     }
+}
+
+/// One property element of a template object, as the template writes it: its tag, attributes,
+/// text (elements that hold text, such as `picture`, `toolTip` or a `message`'s `text`) and its
+/// own property elements.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct XfaProp {
+    pub tag: String,
+    pub attrs: Vec<(String, String)>,
+    pub text: Option<std::sync::Arc<str>>,
+    pub children: Vec<XfaProp>,
+}
+
+/// A template object's own attributes and its property elements.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct XfaProps {
+    pub attrs: Vec<(String, String)>,
+    pub elements: Vec<XfaProp>,
+}
+
+/// What one script run needs.
+#[derive(Clone, Debug)]
+pub struct Script {
+    pub source: String,
+    pub formcalc: bool,
+    pub event: XfaEvent,
+    /// The form as the caller holds it now. Send the same `Arc` while the form is unchanged:
+    /// the next script then starts from the copy the last one was given, without flattening the
+    /// form again.
+    pub root: std::sync::Arc<XfaNode>,
+    pub limits: super::Limits,
+    pub timeout: std::time::Duration,
 }

@@ -136,6 +136,7 @@ Every asset PdfCraft includes, bundles or uses to build its published material, 
 | `assets/icons/move-horizontal.svg` | Lucide icon "move-horizontal" | Lucide Contributors (portions Cole Bemis, Feather) | ISC AND MIT | https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/move-horizontal.svg) | UI icon, embedded via crates/ui-egui/src/icons.rs |
 | `assets/icons/panel-left.svg` | Lucide icon "panel-left" | Lucide Contributors (portions Cole Bemis, Feather) | ISC AND MIT | https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/panel-left.svg) | UI icon, embedded via crates/ui-egui/src/icon_data.rs |
 | `assets/icons/panel-right.svg` | Lucide icon "panel-right" | Lucide Contributors (portions Cole Bemis, Feather) | ISC AND MIT | https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/panel-right.svg) | UI icon, embedded via crates/ui-egui/src/icon_data.rs |
+| `scripts/katwork-profile.tsv` | KatWork build-profile checks | PdfCraft contributors | MIT OR Apache-2.0 | this repository | The rows scripts/katwork-profile.sh checks (KatWork fork CI); not shipped |
 
 ## Compiled in through dependencies (24)
 

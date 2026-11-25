@@ -10,6 +10,7 @@ mod form_rotation;
 mod marked_content_isolation;
 mod ocr_edit;
 mod office_export_images;
+#[cfg(feature = "js")]
 mod page_templates;
 mod private_image_resize;
 mod private_text_glyphs;

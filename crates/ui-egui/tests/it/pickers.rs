@@ -882,6 +882,7 @@ fn a_late_startup_text_file_is_still_converted_without_stealing_focus() {
     assert_eq!(pages(h.state(), 1), 1);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_background_startup_forms_script_notice_waits_until_its_tab_is_selected() {
     let template = pdfcraft_xfa::fixtures::scripted_template()
@@ -900,6 +901,7 @@ fn a_background_startup_forms_script_notice_waits_until_its_tab_is_selected() {
 /// A form opened behind the current document that turns field highlighting on gets it at
 /// once, and so does the next document: only requests that act on the current document (a
 /// print, a save, a message) wait for its tab.
+#[cfg(feature = "js")]
 #[test]
 fn a_background_forms_highlight_request_applies_at_once() {
     let mut h = harness(&[3]);

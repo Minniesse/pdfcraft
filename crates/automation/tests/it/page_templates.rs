@@ -82,6 +82,7 @@ fn templates_are_listed_spawned_shown_and_hidden_through_tools() {
 }
 
 /// `js_run` applies a script's spawn with its other changes, and reports nothing left over.
+#[cfg(feature = "js")]
 #[test]
 fn a_script_run_through_the_tools_adds_the_page() {
     let (dir, mut a) = setup("js");

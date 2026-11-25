@@ -459,7 +459,7 @@ impl PdfCraftApp {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "js"))]
 mod review_tests {
     use super::*;
     /// The central shortcut/page-input gate must see a real hosted script prompt.
@@ -495,7 +495,7 @@ mod review_tests {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "js"))]
 mod review13_ui_tests {
     use super::*;
     use craft::host::{AppInfo, Host, Picked, ScriptedFiles, Wake};
@@ -626,7 +626,7 @@ mod review13_ui_tests {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "js"))]
 mod link_script_tests {
     use super::*;
 

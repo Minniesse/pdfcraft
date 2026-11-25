@@ -540,6 +540,7 @@ fn a_signature_badge_says_its_verdict_with_any_tool() {
 /// Signing a dynamic form's signature box in the app runs its XFA preSign script as signing begins,
 /// so its notice and the value it sets show before the signer confirms, and that value is in the
 /// signed file; its postSign script runs once signed, its change left to save.
+#[cfg(feature = "js")]
 #[test]
 fn signing_an_xfa_box_runs_its_signing_scripts_in_the_app() {
     let dir = dir().join("xfa-events");
@@ -599,6 +600,7 @@ fn signing_an_xfa_box_runs_its_signing_scripts_in_the_app() {
 }
 
 /// Signing a dynamic form's box and then cancelling takes back what its preSign script changed.
+#[cfg(feature = "js")]
 #[test]
 fn cancelling_signing_takes_back_the_presign_scripts_changes() {
     let dir = dir().join("xfa-events-cancel");

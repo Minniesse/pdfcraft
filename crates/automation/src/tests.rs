@@ -37,6 +37,7 @@ fn search_document(a: &mut Automation, pages: usize) -> DocId {
     a.session.open("synthetic.pdf", None, Arc::new(numbered_pages(pages)), None).unwrap()
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn form_fill_cannot_print_but_js_run_can() {
     let mut a = Automation::new();

@@ -15,6 +15,23 @@ Based on PdfCraft by the ArtCraft team (https://github.com/storytold/pdfcraft). 
 | Patch | Upstream PR |
 |---|---|
 | `chore(katwork): remove the ArtCraft marks` | not proposed upstream (the brand terms let a fork that proposes changes keep the marks; this one is a distributed modified version) |
+| `feat(katwork): js feature, on by default` | draft, not opened (in the fork PR body) |
+
+## The `js` gate
+
+`pdfcraft-js` (Acrobat JavaScript on the boa engine, and the FormCalc interpreter) runs a document's field, document and XFA
+scripts. It is an optional dependency of `pdfcraft-engine` behind the feature `js`, on by default, so an upstream build is
+unchanged. The workspace inherits `pdfcraft-engine` and `pdfcraft-ui-egui` with their defaults off, and `pdfcraft-automation`,
+`pdfcraft-ui-egui`, `pdfcraft-cli` (`default = ["mcp", "js"]`), `pdfcraft-web` (a new `[features]` table) and the desktop app
+forward `js` by default. Without it the engine compiles a stand-in (`crates/engine/src/js_off/`) that reads the script engine's
+data types from its own model files and runs nothing: JavaScript stays off whatever the preference says, no script runs when a
+document opens or changes (fields keep their stored values; calculate, validate and format events do nothing), and `js_run`,
+`js_set_document_script` and `form_set_script` answer "JavaScript is not available in this build" and store nothing. The
+KatWork build is `pdfcraft-cli --no-default-features --features mcp` and `pdfcraft-web --no-default-features`.
+
+`scripts/katwork-profile.sh` (CI job `katwork-profile`) checks that `pdfcraft-js` and `boa_engine` are out of the CLI and web
+build graphs with the gate off and in them with the defaults; `crates/engine/tests/katwork_profile.rs` and
+`crates/automation/tests/katwork_profile.rs` run with it off.
 
 ## The marks
 

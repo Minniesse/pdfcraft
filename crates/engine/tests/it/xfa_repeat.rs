@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use pdfcraft_engine::Session;
 
+#[cfg(feature = "js")]
 /// A list whose `item` row (20pt, 36 to a page) repeats without bound, `data` rows in its
 /// datasets, and a button that adds `add` rows in one click.
 fn form(add: usize, data_rows: usize) -> Vec<u8> {
@@ -38,6 +39,7 @@ fn rows(s: &Session, id: pdfcraft_engine::DocId) -> usize {
     s.get(id).map_or(0, |d| d.form.iter().filter(|f| f.name.starts_with("qty")).count())
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_button_adding_rows_past_fifty_lays_them_all_out() {
     let mut s = Session::new();

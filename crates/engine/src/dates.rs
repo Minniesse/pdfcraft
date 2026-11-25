@@ -7,6 +7,9 @@
 //! Patterns use `util.printd`'s date letters: `yyyy` `yy`, `mmmm` `mmm` `mm` `m`, `dddd` `ddd`
 //! `dd` `d`. `\` shows the next character as is (`d \de mmmm` → `8 de October`).
 
+#[cfg(not(feature = "js"))]
+use crate::pdfcraft_js;
+
 use crate::Session;
 
 /// The format until the user picks one (Acrobat's: US month/day/year).

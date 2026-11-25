@@ -5,6 +5,9 @@
 //! presence and access changes become overrides kept in the PDF, added or removed rows change
 //! the datasets, and any of those lays the form out again.
 
+#[cfg(not(feature = "js"))]
+use crate::pdfcraft_js;
+
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -1669,6 +1672,7 @@ mod tests {
     /// A field's click script reads its own and other objects' properties through a laid-out
     /// dynamic form: template values, the spec's defaults, and a write read back, which changes
     /// nothing on the form.
+    #[cfg(feature = "js")]
     #[test]
     fn a_click_script_reads_field_properties() {
         let template = pdfcraft_xfa::fixtures::scripted_template()

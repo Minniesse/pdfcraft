@@ -27,9 +27,11 @@ craft-mcp-server = { workspace = true, optional = true }
 
 
 [features]
-default = ["mcp"]
+default = ["mcp", "js"]
 # The MCP server module. Opt-in at run time either way; disable to leave it out of the build.
 mcp = ["dep:base64", "dep:craft-jsonrpc", "dep:craft-mcp-server"]
+# Document, field and XFA scripts (see pdfcraft-engine).
+js = ["pdfcraft-engine/js"]
 
 [dev-dependencies]
 # Synthetic printer profiles for the app-managed print colour tests.

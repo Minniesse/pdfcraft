@@ -67,7 +67,7 @@ impl Session {
     pub fn open_context(&self) -> OpenContext {
         OpenContext {
             now: self.now(),
-            js_off: self.js_off,
+            js_off: self.js_off(),
             trust: self.trust.clone(),
             highlight: self.field_highlight,
             captions: self.captions.clone(),

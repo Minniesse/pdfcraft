@@ -45,6 +45,10 @@ mod open;
 pub mod open_parameters;
 pub mod optimizer;
 mod page_filter;
+/// Without the `js` feature, the script engine's data types and entry points that run nothing.
+#[cfg(not(feature = "js"))]
+#[path = "js_off/mod.rs"]
+mod pdfcraft_js;
 mod pictures;
 pub mod print_raster;
 pub mod printcheck;
@@ -206,7 +210,7 @@ pub const MAX_STAMP_LINE: usize = 200;
 
 #[cfg(test)]
 mod document_actions_tests;
-#[cfg(test)]
+#[cfg(all(test, feature = "js"))]
 mod link_javascript_tests;
 #[cfg(test)]
 mod tests;

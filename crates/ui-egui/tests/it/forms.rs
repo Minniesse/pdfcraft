@@ -54,6 +54,7 @@ fn redo(h: &mut Harness<'static, PdfCraftApp>) {
     h.state_mut().redo(&ctx);
 }
 
+#[cfg(feature = "js")]
 /// Runs the button script of field `field` in document `id`, with the harness's context.
 fn run_button_script(h: &mut Harness<'static, PdfCraftApp>, id: pdfcraft_engine::DocId, field: &str, script: &str) {
     let ctx = h.ctx.clone();
@@ -1126,6 +1127,7 @@ fn validated_form() -> Vec<u8> {
     ])
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn pressing_another_text_field_validates_the_refused_value_once() {
     // The press commits `qty`; its release must not commit (and alert) a second time.
@@ -1162,6 +1164,7 @@ fn pressing_another_text_field_validates_the_refused_value_once() {
     assert_eq!((focus.name.as_str(), focus.text.as_str()), ("qty", "4500"));
 }
 
+#[cfg(feature = "js")]
 /// `validated_form` plus a plain text field, `note`, under `qty`.
 fn validated_form_with_note() -> Vec<u8> {
     pdf_from_objects(&[
@@ -1265,6 +1268,7 @@ fn buttons_over_text_show_the_pointing_hand_not_the_i_beam() {
     assert_eq!(value(&h, "strength"), ["Yes"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_rejected_value_keeps_the_typing_and_stops_the_save() {
     let dir = scratch("rejected");
@@ -1305,16 +1309,19 @@ fn a_save_shortcut_pressed_while_typing_saves_only_the_document_it_was_pressed_i
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_value_refused_on_enter_keeps_save_in_the_same_frame_from_running() {
     refused_value_stops_save(egui::Key::Enter, "enter-refused");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_value_refused_on_tab_keeps_save_in_the_same_frame_from_running() {
     refused_value_stops_save(egui::Key::Tab, "tab-refused");
 }
 
+#[cfg(feature = "js")]
 fn refused_value_stops_save(commit_key: egui::Key, case: &str) {
     let dir = scratch(case);
     let out = dir.join("saved.pdf");
@@ -1436,6 +1443,7 @@ mod revert_tests {
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculated_field_and_script_side_effect_on_another_page_re_render() {
     let mut h = harness();
@@ -1473,6 +1481,7 @@ fn calculated_field_and_script_side_effect_on_another_page_re_render() {
     assert_eq!(value(&h, "page2_field"), ["from_hello"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn overlay_clears_after_fresh_tiles_zoom_then_edit_and_rejected_edit() {
     let mut h = harness();
@@ -1879,10 +1888,12 @@ fn the_field_editor_sizes_auto_size_text_as_the_page_does() {
     assert_eq!(screen("huge", 0.5), ((400.0 - 6.0) / 1.15) as f32 * 0.5, "below it at 50%");
 }
 
+#[cfg(feature = "js")]
 /// The one-page PDF `guide_fixture` attaches as `Guide.pdf`.
 const GUIDE_INNER: &str = "%PDF-1.7\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n\
                  3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF";
 
+#[cfg(feature = "js")]
 /// A page with a push button `go`, and three attached files: a one-page PDF filed under the key
 /// `Guide.pdf` (its own file name `inner.pdf`), `notes.txt`, and `fake.pdf`, which holds text.
 fn guide_fixture() -> Vec<u8> {
@@ -1917,6 +1928,7 @@ fn guide_fixture() -> Vec<u8> {
 /// An attachment opens in a tab only when its bytes are a PDF, whatever its name says: a
 /// `fake.pdf` holding text is offered to save instead. A request goes back to the tab opened from
 /// that attachment, and not to another open PDF of the same name whose bytes start with it.
+#[cfg(feature = "js")]
 #[test]
 fn a_form_button_opens_only_a_real_pdf_and_returns_to_the_tab_it_opened() {
     let saved = std::env::temp_dir().join(format!("pdfcraft-fake-{}.pdf", std::process::id()));
@@ -1959,6 +1971,7 @@ fn a_form_button_opens_only_a_real_pdf_and_returns_to_the_tab_it_opened() {
 
 /// A button script's `exportDataObject` opens the attached PDF in a new tab, goes back to that
 /// tab when asked again, and names a missing file in a toast, a long name shortened.
+#[cfg(feature = "js")]
 #[test]
 fn a_form_button_opens_its_attached_instructions_in_a_new_tab() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
@@ -2147,6 +2160,7 @@ fn a_combo_box_without_edit_takes_no_typing() {
 
 /// A button script's `ShowHideFileAttachment` opens the attachments panel, and running it again
 /// closes it.
+#[cfg(feature = "js")]
 #[test]
 fn a_form_button_shows_and_hides_the_attachments_panel() {
     let mut h = harness();

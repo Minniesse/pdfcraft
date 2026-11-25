@@ -2,11 +2,14 @@
 //! its values from the XFA data; one whose template can't be read says that instead of silently
 //! showing a placeholder page.
 
+#[cfg(feature = "js")]
 use craft::ui::runtime::{env::WindowKey, toast};
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
 // PLAN: assumed `pdfcraft_ui_egui::JsDialog` with `Console` (pdf-forms-w17)
-use pdfcraft_ui_egui::{JsDialog, PdfCraftApp};
+#[cfg(feature = "js")]
+use pdfcraft_ui_egui::JsDialog;
+use pdfcraft_ui_egui::PdfCraftApp;
 
 /// A one-page PDF with a proper xref; `acroform` is the catalog's /AcroForm (or empty), `extra`
 /// more catalog entries, `objects` extra objects numbered from 5.
@@ -116,6 +119,7 @@ fn ordinary_forms_and_documents_have_no_xfa_notice() {
     assert_eq!(xfa(&h), Some(pdfcraft_render::Xfa::Dynamic));
 }
 
+#[cfg(feature = "js")]
 /// Click the centre of a field's widget.
 fn click_field(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
     let p = {
@@ -134,6 +138,7 @@ fn click_field(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
 
 /// Clicking an XFA button in the app runs its click script: one adds a row, another shows its
 /// message as a notice.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_buttons_run_their_scripts_in_the_app() {
     let mut h = open(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
@@ -153,6 +158,7 @@ fn xfa_buttons_run_their_scripts_in_the_app() {
 /// Every way the focus moves (a click, Tab, Shift+Tab, Escape) runs the field it left's exit
 /// script and the field it reached's enter script, changed or not; typing a change and tabbing
 /// out runs the exit once, not twice. A script's message shows as a notice.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_enter_and_exit_scripts_run_whenever_the_focus_moves() {
     use egui::{Key, Modifiers};
@@ -196,6 +202,7 @@ fn xfa_enter_and_exit_scripts_run_whenever_the_focus_moves() {
 /// so leaving the field keeps the script's value rather than writing the old one back; typing
 /// after it is kept as usual. When the exit of the field left changed it first (`relay` puts the
 /// "Type here" back), the editor follows both scripts and ends on the enter script's value.
+#[cfg(feature = "js")]
 #[test]
 fn an_enter_script_that_changes_its_field_shows_in_the_editor() {
     use egui::{Key, Modifiers};
@@ -235,6 +242,7 @@ fn an_enter_script_that_changes_its_field_shows_in_the_editor() {
 
 /// A message an initialize script shows on opening appears at once, and a print request from it
 /// is refused (only a click may print).
+#[cfg(feature = "js")]
 #[test]
 fn messages_from_scripts_run_on_open_show_right_away() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template()
@@ -247,11 +255,14 @@ fn messages_from_scripts_run_on_open_show_right_away() {
     assert!(h.state_mut().session.take_js_output(id).is_empty(), "nothing waits for the next edit");
 }
 
+#[cfg(feature = "js")]
 /// A script the engine's own limits don't stop (its loops are in nested calls): it runs until
 /// it is abandoned, which turns the form's scripts off.
 const RUNAWAY: &str = "function f() { for (var j = 0; j &lt; 99999; j++) {} } for (var k = 0; k &lt; 5000; k++) f();";
+#[cfg(feature = "js")]
 const SCRIPTS_OFF: &str = "This form's scripts are turned off because one ran too long";
 
+#[cfg(feature = "js")]
 /// The text of every notice card on screen: its title and its message.
 fn shown_notices(h: &Harness<'static, PdfCraftApp>) -> Vec<String> {
     toast::cards(&h.ctx, &WindowKey::main())
@@ -263,11 +274,13 @@ fn shown_notices(h: &Harness<'static, PdfCraftApp>) -> Vec<String> {
         .collect()
 }
 
+#[cfg(feature = "js")]
 /// Whether a notice card says the form's scripts are off.
 fn says_scripts_are_off(h: &Harness<'static, PdfCraftApp>) -> bool {
     shown_notices(h).iter().any(|text| text.contains(SCRIPTS_OFF))
 }
 
+#[cfg(feature = "js")]
 /// The user's close action on every notice card, then the passes that act on it.
 fn dismiss_notices(h: &mut Harness<'static, PdfCraftApp>) {
     for card in toast::cards(&h.ctx, &WindowKey::main()) {
@@ -276,6 +289,7 @@ fn dismiss_notices(h: &mut Harness<'static, PdfCraftApp>) {
     h.run_steps(2);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_form_whose_scripts_were_turned_off_at_open_says_so() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template().replace("if (qty.rawValue === null) qty.rawValue = 2;", RUNAWAY);
@@ -293,6 +307,7 @@ fn a_form_whose_scripts_were_turned_off_at_open_says_so() {
     assert!(h.state().js_console.log.iter().any(|l| l.contains("abandoned")), "{:?}", h.state().js_console.log);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn scripts_turned_off_by_a_click_bring_a_closed_notice_bar_back() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template().replace(r#"xfa.host.messageBox("Hello " + qty.rawValue);"#, RUNAWAY);
@@ -345,6 +360,7 @@ fn a_secured_dynamic_xfa_form_shows_its_layout_and_its_security() {
 /// read: the new one opens with the remembered Highlight fields in its own open context. Before,
 /// the open set the session's value, so an edit of the first document handled before the next
 /// frame read the new document's default as `app.runtimeHighlight`.
+#[cfg(feature = "js")]
 #[test]
 fn opening_another_document_keeps_the_highlight_the_one_in_front_reads() {
     let script = |js: &str| format!(r#"<event activity="click"><script contentType="application/x-javascript">{js}</script></event>"#);

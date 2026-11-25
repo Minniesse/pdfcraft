@@ -1293,6 +1293,7 @@ fn highlight_fields_leaves_push_buttons_alone() {
     assert_eq!(tints_over(&h, [50.0, 200.0, 250.0, 340.0]), 0, "the push button is left as drawn");
 }
 
+#[cfg(feature = "js")]
 /// A page whose open action starts an interval writing a counter into the console.
 const PAGE_TIMER: &[u8] = b"%PDF-1.7
 1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
@@ -1302,6 +1303,7 @@ trailer << /Root 1 0 R >>
 %%EOF";
 
 /// The viewer runs the open action of the page being read, and its timers as they fall due.
+#[cfg(feature = "js")]
 #[test]
 fn the_viewer_runs_the_pages_open_action_and_its_timers() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
@@ -1323,6 +1325,7 @@ fn the_viewer_runs_the_pages_open_action_and_its_timers() {
 }
 
 /// Under a dialog nothing acts on the document: the page's open action waits until it closes.
+#[cfg(feature = "js")]
 #[test]
 fn page_actions_and_timers_wait_under_a_dialog() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
@@ -1343,6 +1346,7 @@ fn page_actions_and_timers_wait_under_a_dialog() {
     assert!(h.state_mut().session.next_timer(id).is_some(), "and runs once it closes");
 }
 
+#[cfg(feature = "js")]
 /// Three pages: the first's open action starts an interval counting `n`; the second's open
 /// action goes on to the third, and its close action stops the interval.
 const PAGE_HOP: &[u8] = b"%PDF-1.7
@@ -1356,6 +1360,7 @@ trailer << /Root 1 0 R >>
 
 /// A page whose open action goes to another page runs no timer before its close action: the
 /// interval that close action stops doesn't run in between.
+#[cfg(feature = "js")]
 #[test]
 fn timers_wait_for_the_page_a_page_action_goes_to() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
@@ -1380,6 +1385,7 @@ fn timers_wait_for_the_page_a_page_action_goes_to() {
     assert_eq!(count(&mut h), before, "which didn't run in between");
 }
 
+#[cfg(feature = "js")]
 /// A text field, with a default appearance for its editor.
 const FIELD_TIMER: &[u8] = b"%PDF-1.7
 1 0 obj << /Type /Catalog /Pages 2 0 R /AcroForm << /Fields [4 0 R] /DA (/Helv 10 Tf 0 g) /DR << /Font << /Helv 5 0 R >> >> >> >> endobj
@@ -1390,6 +1396,7 @@ const FIELD_TIMER: &[u8] = b"%PDF-1.7
 trailer << /Root 1 0 R >>
 %%EOF";
 
+#[cfg(feature = "js")]
 /// Press field `name`'s first widget, wherever the document has it.
 fn press_field(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
     let p = {
@@ -1408,6 +1415,7 @@ fn press_field(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
 
 /// A time-out writing the field being edited shows in its editor: leaving the field then keeps the
 /// timer's value instead of writing the old one back.
+#[cfg(feature = "js")]
 #[test]
 fn a_timer_writing_the_focused_field_shows_in_its_editor() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
@@ -1446,6 +1454,7 @@ fn a_timer_writing_the_focused_field_shows_in_its_editor() {
     assert_eq!(focus, Some(("clock".into(), "tick".into())), "the editor shows the time-out's value");
 }
 
+#[cfg(feature = "js")]
 /// Two push buttons: "shown" hidden in the document and "gone" not; the page's open action shows
 /// the first and hides the second. Each one's mouse-up action says it was pressed.
 const SHOWN_BY_SCRIPT: &[u8] = b"%PDF-1.7
@@ -1459,6 +1468,7 @@ trailer << /Root 1 0 R >>
 
 /// A button the page's open action showed takes presses, and one it hid takes none, whatever
 /// their flags in the document say.
+#[cfg(feature = "js")]
 #[test]
 fn buttons_take_presses_as_the_scripts_show_them() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {

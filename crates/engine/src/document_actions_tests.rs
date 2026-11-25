@@ -44,6 +44,7 @@ fn log(s: &Session, id: DocId) -> String {
 
 /// The open action runs once on opening, after the document scripts and in their realm, and
 /// sees `event.name` "Open"; its field change is applied.
+#[cfg(feature = "js")]
 #[test]
 fn the_open_action_runs_once_on_opening_in_the_document_realm() {
     let bytes = form(
@@ -63,6 +64,7 @@ fn the_open_action_runs_once_on_opening_in_the_document_realm() {
 
 /// An open action chain runs in order through `/Next` (a dictionary or an array), skipping
 /// actions of other types, and a cycle in it runs each action once.
+#[cfg(feature = "js")]
 #[test]
 fn an_open_action_chain_runs_in_order_and_a_cycle_runs_each_action_once() {
     let bytes = form(
@@ -81,6 +83,7 @@ fn an_open_action_chain_runs_in_order_and_a_cycle_runs_each_action_once() {
 
 /// What an open action asks for that needs a click (a URL, printing) is dropped; a page
 /// change it asks for is kept.
+#[cfg(feature = "js")]
 #[test]
 fn an_open_action_may_not_open_a_url_or_print() {
     let bytes = form("/OpenAction << /S /JavaScript /JS (app.launchURL\\('https://example.com'\\); this.print\\(\\); this.pageNum = 0;) >>", &[]);
@@ -102,6 +105,7 @@ fn the_open_action_does_not_run_with_javascript_off() {
 }
 
 /// Revert reopens the saved file in a fresh realm, so the open action runs again from scratch.
+#[cfg(feature = "js")]
 #[test]
 fn revert_runs_the_open_action_again_in_a_fresh_realm() {
     let bytes = form(
@@ -118,6 +122,7 @@ fn revert_runs_the_open_action_again_in_a_fresh_realm() {
 
 /// Will Save runs in the document realm before the bytes are written, and what it changes is in
 /// the saved file; a failing Will Save is reported and the save still has bytes to write.
+#[cfg(feature = "js")]
 #[test]
 fn will_save_changes_what_is_saved_and_a_failing_one_does_not_stop_the_save() {
     let bytes = form(
@@ -143,6 +148,7 @@ fn will_save_changes_what_is_saved_and_a_failing_one_does_not_stop_the_save() {
 }
 
 /// Will Print runs before printing, in the same realm, and sees `event.name` "WillPrint".
+#[cfg(feature = "js")]
 #[test]
 fn will_print_runs_in_the_document_realm() {
     let bytes = form("/AA << /WP << /S /JavaScript /JS (getField\\('log'\\).value = event.name;) >> >>", &[]);
@@ -154,6 +160,7 @@ fn will_print_runs_in_the_document_realm() {
     assert_eq!(log(&s, id), "WillPrint");
 }
 
+#[cfg(feature = "js")]
 /// A form with a text field `log` and a text field `hot` whose widget has JavaScript for every
 /// pointer and focus trigger, each appending `event.name` to `log`.
 fn triggers_form() -> Vec<u8> {
@@ -180,6 +187,7 @@ fn triggers_form() -> Vec<u8> {
 
 /// Pointer and focus triggers run the widget's JavaScript with the event names Acrobat uses,
 /// each as one undoable edit; a field without such a script runs nothing.
+#[cfg(feature = "js")]
 #[test]
 fn pointer_and_focus_triggers_run_the_widget_scripts() {
     use crate::js::FieldFocus;
@@ -200,6 +208,7 @@ fn pointer_and_focus_triggers_run_the_widget_scripts() {
 }
 
 /// A click's Mouse Down may ask to print; losing the focus, which happens unasked, may not.
+#[cfg(feature = "js")]
 #[test]
 fn only_a_click_trigger_may_print() {
     use crate::js::{FieldFocus, Request};
@@ -217,6 +226,7 @@ fn only_a_click_trigger_may_print() {
 /// `setItems` and `setAction` are written to the document: the combo box gets its new items
 /// (pairs where text and export value differ), the installed scripts run on their triggers, and
 /// both survive a save (#269, from #344).
+#[cfg(feature = "js")]
 #[test]
 fn set_items_and_set_action_are_written_to_the_document() {
     use pdfcraft_forms::Trigger;
@@ -259,6 +269,7 @@ fn set_items_and_set_action_are_written_to_the_document() {
 
 /// A check box's Mouse Up, run after the click stored the new value, reads that value and can
 /// show or hide another field by it (#247).
+#[cfg(feature = "js")]
 #[test]
 fn a_check_box_mouse_up_reads_the_value_its_click_stored() {
     use crate::{Edit, FieldValue};
@@ -290,6 +301,7 @@ fn a_check_box_mouse_up_reads_the_value_its_click_stored() {
 
 /// A widget action's `/Next` chain runs too, each JavaScript action in order (depth first), past
 /// an action of another type at its head.
+#[cfg(feature = "js")]
 #[test]
 fn a_widget_actions_next_chain_runs_each_script_in_order() {
     use pdfcraft_forms::Trigger;
@@ -311,6 +323,7 @@ fn a_widget_actions_next_chain_runs_each_script_in_order() {
 
 /// `setAction` on a field that shares its name with another installs the script on that field,
 /// the one the script's object stands for, not the first of the name.
+#[cfg(feature = "js")]
 #[test]
 fn set_action_installs_on_the_field_the_object_stands_for() {
     let objs = vec![
@@ -333,6 +346,7 @@ fn set_action_installs_on_the_field_the_object_stands_for() {
 }
 
 /// Of two fields sharing a name, the one the pointer is on runs its own widget script.
+#[cfg(feature = "js")]
 #[test]
 fn a_trigger_on_a_field_sharing_a_name_runs_that_fields_script() {
     use pdfcraft_forms::Trigger;
@@ -357,6 +371,7 @@ fn a_trigger_on_a_field_sharing_a_name_runs_that_fields_script() {
 }
 
 /// Focus too: of two fields sharing a name, the one that gained focus runs its On Focus script.
+#[cfg(feature = "js")]
 #[test]
 fn focus_on_a_field_sharing_a_name_runs_that_fields_script() {
     use crate::js::FieldFocus;
