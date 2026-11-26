@@ -64,3 +64,13 @@ fn about_dialog_has_contributors_and_models_tabs() {
     h.run_steps(4);
     assert!(h.query_all_by_label("Anthropic").count() >= 1);
 }
+
+/// Without the script engine (the `js` feature) Preferences has no JavaScript page to turn it on.
+#[cfg(not(feature = "js"))]
+#[test]
+fn preferences_offer_no_javascript_page_without_the_engine() {
+    let mut h = harness(|app| app.set_option(&egui::Context::default(), "dialog", "preferences").unwrap());
+    settled(&mut h, "Fill & Sign");
+    assert!(h.query_all_by_label("Enable Acrobat JavaScript").next().is_none(), "the JavaScript switch is offered");
+    assert!(h.query_all_by_label("JavaScript").next().is_none(), "a JavaScript page is offered");
+}

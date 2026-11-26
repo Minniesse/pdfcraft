@@ -244,7 +244,13 @@ fn field_tip(f: &Field) -> String {
         tip.push_str(&format!(" — {tt}"));
     }
     if f.has_actions {
-        tip.push_str(&format!("\n{}", tl!("Has JavaScript actions (run in M6)")));
+        // Without the script engine (the `js` feature) the actions never run.
+        let note = if cfg!(feature = "js") {
+            tl!("Has JavaScript actions (run in M6)")
+        } else {
+            tl!("Has JavaScript actions, which this build does not run")
+        };
+        tip.push_str(&format!("\n{note}"));
     }
     tip
 }

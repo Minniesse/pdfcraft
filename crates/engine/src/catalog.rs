@@ -512,6 +512,8 @@ pub static TOOL_GROUPS: &[ToolGroup] = &[
         availability: Planned("M12"),
         sections: &[ToolSection { title: "Index", items: &[item("Manage embedded index", "file-search", "search.index", Planned("M12"))] }],
     },
+    // The JavaScript tools need the script engine (the `js` feature).
+    #[cfg(feature = "js")]
     ToolGroup {
         id: "javascript",
         label: "Use JavaScript",
@@ -564,7 +566,10 @@ pub static TOOL_CATEGORIES: &[ToolCategory] = &[
     ToolCategory { label: "Review & Compare", groups: &["comment", "stamp", "compare", "measure"] },
     ToolCategory { label: "Forms & Signatures", groups: &["fill_sign", "form", "certificate"] },
     ToolCategory { label: "Protect & Standardize", groups: &["protect", "redact", "accessibility", "standards", "print_production"] },
+    #[cfg(feature = "js")]
     ToolCategory { label: "Customize & Automate", groups: &["actions", "javascript", "search_index", "ai"] },
+    #[cfg(not(feature = "js"))]
+    ToolCategory { label: "Customize & Automate", groups: &["actions", "search_index", "ai"] },
 ];
 
 #[cfg(test)]

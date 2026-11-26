@@ -117,6 +117,11 @@ impl T {
         self.command = Some(id);
         self
     }
+    /// [`Self::cmd`] for a command of the script engine, which a build without the `js` feature
+    /// does not register.
+    const fn js_cmd(self, id: &'static str) -> Self {
+        if cfg!(feature = "js") { self.cmd(id) } else { self }
+    }
     fn with(self, input_schema: Value) -> ToolDef {
         ToolDef {
             name: self.name,
@@ -1440,7 +1445,7 @@ pub fn tools() -> Vec<ToolDef> {
             .cmd("form.merge_data")
             .with(schema(json!({ "paths": { "type": "array", "items": { "type": "string" }, "minItems": 1 }, "path": { "type": "string" } }), &["paths", "path"])),
         t("js_run", "Run JavaScript", "Run Acrobat JavaScript in the document, as the JavaScript console does (or as push button `field`'s Mouse Up script when field is given; on a laid-out XFA form, `field` runs that button's XFA click script instead, JavaScript or FormCalc, which can add and remove rows and show or hide subforms). The form object model is available: this/getField, event, app, util, console, display, color, and the document-level scripts (except the PDF container scripts when XFA layout is active; they remain available through js_document_scripts). Field changes and resetForm are applied as one undoable step; returns the script's and subsequent field scripts' alerts (each with its message, title, icon and buttons, in order; AcroForm replies consume ordered answers; missing replies cancel input or use the alert button set's safe default), console output, requests (print, page, url, submit, attachment), error, and the errors of document-level scripts that failed (the rest still ran), plus warnings from applying the changes.")
-            .cmd("tools.js_console")
+            .js_cmd("tools.js_console")
             .with(schema(
                 json!({ "doc": doc(), "script": { "type": "string" }, "field": { "type": "string", "description": "Run as this button's Mouse Up event." }, "field_id": {"type":"integer","minimum":0,"maximum":281474976710655u64,"description":"Optional exact field identity from form_fields; requires matching field name and is scoped to this document."}, "answers": {"type":"array","maxItems":32,"items":{"type":["string","null"],"maxLength":4096},"description":"Ordered popup, response and alert answers; strings are limited to 4096 UTF-8 bytes at runtime; null cancels a popup or response, and selects an alert default (OK, Cancel or No, by button set)."} }),
                 &["doc", "script"],
@@ -1466,10 +1471,10 @@ pub fn tools() -> Vec<ToolDef> {
             .with(schema(json!({ "doc": doc(), "ms": { "type": "number", "minimum": 0, "maximum": 3600000 } }), &["doc", "ms"])),
         t("js_document_scripts", "Document JavaScripts", "List the document-level JavaScripts (name and source), which define functions field scripts use.")
             .ro()
-            .cmd("tools.document_js")
+            .js_cmd("tools.document_js")
             .with(schema(json!({ "doc": doc() }), &["doc"])),
         t("js_set_document_script", "Edit a document JavaScript", "Add or replace the document-level JavaScript `name` with `script`, or delete it (script omitted). Undoable.")
-            .cmd("tools.document_js")
+            .js_cmd("tools.document_js")
             .with(schema(json!({ "doc": doc(), "name": { "type": "string", "minLength": 1 }, "script": { "type": "string" } }), &["doc", "name"])),
         t("form_set_script", "Set a field's JavaScript", "Field Properties ▸ Run custom script: set field's JavaScript for event keystroke, format, validate or calculate (the field's actions; calculated fields join the calculation order) or mouse_up (a button's action). Omit script to remove it. The scripts use Acrobat's object model (event.value, event.rc, getField, util.printf, …) and run when the field changes. Undoable.")
             .cmd("form.prepare")

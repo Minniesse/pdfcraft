@@ -39,3 +39,17 @@ fn a_script_inside_a_batch_is_refused_and_nothing_is_stored() {
     assert!(e.contains(pdfcraft_engine::js::NOT_AVAILABLE), "{e}");
     assert_eq!(s.get(id).unwrap().dirty, dirty, "nothing was stored");
 }
+
+#[test]
+fn no_javascript_command_or_tool_is_offered() {
+    for id in ["tools.js_console", "tools.document_js"] {
+        assert!(pdfcraft_engine::commands::command(id).is_none(), "{id} is offered");
+    }
+    assert!(pdfcraft_engine::catalog::group("javascript").is_none(), "the Use JavaScript tools are offered");
+    for category in pdfcraft_engine::catalog::TOOL_CATEGORIES {
+        for id in category.groups {
+            assert!(pdfcraft_engine::catalog::group(id).is_some(), "{} lists the missing group {id}", category.label);
+        }
+    }
+    assert!(pdfcraft_engine::commands::command("app.preferences").is_some(), "the other commands stay");
+}

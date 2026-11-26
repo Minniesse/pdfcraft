@@ -402,6 +402,7 @@ fn city_calculation(h: &Harness<'static, PdfCraftApp>) -> (pdfcraft_engine::form
 
 /// The Calculate tab's box for a formula in simplified field notation.
 const NOTATION: &str = "Simplified field notation:";
+#[cfg(feature = "js")]
 /// The Actions tab's box for a Run a JavaScript action's script.
 const ACTION_SCRIPT: &str = "Script:";
 
@@ -1194,6 +1195,7 @@ fn image_fields_take_a_picture_when_clicked() {
     assert_eq!(s.session.get(s.views[0].id).unwrap().can_undo(), Some("Set the image of Image1"));
 }
 
+#[cfg(feature = "js")]
 /// Adds an action on the Actions tab: picks its trigger and kind, types its script or value, and
 /// presses Add.
 fn add_action(h: &mut Harness<'static, PdfCraftApp>, trigger: &str, kind: &str, text: &str) {
@@ -1208,6 +1210,8 @@ fn add_action(h: &mut Harness<'static, PdfCraftApp>, trigger: &str, kind: &str, 
     h.run_steps(2);
 }
 
+// Adds or edits a "Run a JavaScript" action, which needs the script engine (the `js` feature).
+#[cfg(feature = "js")]
 #[test]
 fn actions_tab_adds_and_removes_actions() {
     use pdfcraft_engine::{FieldAction, FieldTrigger};
@@ -1234,6 +1238,8 @@ fn actions_tab_adds_and_removes_actions() {
     );
 }
 
+// Adds or edits a "Run a JavaScript" action, which needs the script engine (the `js` feature).
+#[cfg(feature = "js")]
 #[test]
 fn actions_tab_edits_the_script_of_an_existing_action() {
     use pdfcraft_engine::{FieldAction, FieldTrigger};
@@ -1287,6 +1293,7 @@ fn actions_tab_edits_the_script_of_an_existing_action() {
     );
 }
 
+#[cfg(feature = "js")]
 /// One page with a push button "go": Mouse Up runs a script with a link chained after it, On Blur
 /// runs another script.
 fn chained_action_fixture() -> Vec<u8> {
@@ -1375,6 +1382,8 @@ fn a_radio_button_joining_a_group_by_name_stays_selected() {
     assert_eq!(rects(&h), nudged);
 }
 
+// Adds or edits a "Run a JavaScript" action, which needs the script engine (the `js` feature).
+#[cfg(feature = "js")]
 #[test]
 fn actions_tab_shows_a_chain_and_keeps_it_when_the_first_action_is_replaced() {
     use egui_kittest::kittest::NodeT;
@@ -2130,4 +2139,25 @@ fn with_prepare_open_a_double_click_on_a_field_leaves_the_polygon_unfinished() {
     let polygons = s.session.get(s.views[0].id).unwrap().info.annotations.iter().filter(|a| a.subtype == "Polygon").count();
     assert_eq!(polygons, 0, "the polygon is not finished");
     assert!(!s.views[0].session.comments.tool.drawing().is_empty(), "it is still being clicked out");
+}
+
+/// Without the script engine (the `js` feature) Field Properties offers no script: the Actions tab has no
+/// "Run a JavaScript" action, and the Calculate tab no custom calculation script.
+#[cfg(not(feature = "js"))]
+#[test]
+fn field_properties_offer_no_script_without_the_engine() {
+    let mut h = harness();
+    h.execute("form.prepare");
+    h.run_steps(2);
+    open_props(&mut h, "city");
+    tab(&mut h, "Actions");
+    h.get_by_label("Select Action:").click();
+    h.run_steps(2);
+    h.get_all_by_label("Open a web link").last().expect("the list offers the other actions");
+    assert!(h.query_all_by_label("Run a JavaScript").next().is_none(), "a script action is offered");
+    h.key_press(egui::Key::Escape);
+    h.run_steps(2);
+    tab(&mut h, "Calculate");
+    h.get_by_label("Value is not calculated");
+    assert!(h.query_all_by_label("Custom calculation script:").next().is_none(), "a custom calculation script is offered");
 }

@@ -29,6 +29,14 @@ document opens or changes (fields keep their stored values; calculate, validate 
 `js_set_document_script` and `form_set_script` answer "JavaScript is not available in this build" and store nothing. The
 KatWork build is `pdfcraft-cli --no-default-features --features mcp` and `pdfcraft-web --no-default-features`.
 
+The JavaScript UI is hidden with the gate off (founder ruling: hide them): the commands `tools.js_console` (the console,
+Cmd+J) and `tools.document_js` (the Document JavaScripts editor) are not registered, so no menu, shortcut or search offers
+them; the tools catalog has no "Use JavaScript" group; Preferences has no JavaScript page; Field Properties offers no "Run a
+JavaScript" action and no custom calculation script (a field that already has one says it is not run or edited here, and
+keeps it unless another calculation is chosen); the Fields panel says a field's JavaScript actions are not run. The
+automation tools `js_run`, `js_set_document_script`, `form_set_script` and `js_enabled` stay, as the plan asks, and answer
+"not available in this build" (or `false`).
+
 `scripts/katwork-profile.sh` (CI job `katwork-profile`) checks that `pdfcraft-js` and `boa_engine` are out of the CLI and web
 build graphs with the gate off and in them with the defaults; `crates/engine/tests/katwork_profile.rs` and
 `crates/automation/tests/katwork_profile.rs` run with it off.

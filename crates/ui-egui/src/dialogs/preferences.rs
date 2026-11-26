@@ -396,7 +396,11 @@ fn date_language_picker_name(ctx: &egui::Context, l: &pdfcraft_engine::dates::Da
 
 impl PreferencesModel for Prefs<'_> {
     fn pages(&self) -> Vec<PageSpec<'_>> {
-        vec![self.general_page(), self.appearance_page(), self.documents_page(), self.comment_page(), self.fill_sign_page(), self.javascript_page()]
+        let pages = vec![self.general_page(), self.appearance_page(), self.documents_page(), self.comment_page(), self.fill_sign_page()];
+        // The JavaScript page needs the script engine (the `js` feature): without it there is nothing to turn on.
+        #[cfg(feature = "js")]
+        let pages = [pages, vec![self.javascript_page()]].concat();
+        pages
     }
 
     fn set(&mut self, key: &str, value: PrefValue) {
@@ -814,6 +818,7 @@ impl Prefs<'_> {
         PageSpec::new("fill", tl!("Fill & Sign"), rows)
     }
 
+    #[cfg(feature = "js")]
     fn javascript_page(&self) -> PageSpec<'_> {
         let rows = vec![
             RowSpec::new("javascript.enable", tl!("Enable Acrobat JavaScript"), RowKind::Bool(self.draft.javascript)).help(tl!(
