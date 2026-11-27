@@ -31,16 +31,16 @@ jobs:
         run: |
           set -o pipefail
           cargo test --locked -p pdfcraft-engine --no-default-features --test katwork_profile 2>&1 | tee katwork-profile-test.log
-          grep -E 'test result: ok\. [1-9][0-9]* passed' katwork-profile-test.log
+          grep -E 'test result: ok\. 3 passed; 0 failed' katwork-profile-test.log
       - name: The gate test (tools), with the gate off and the MCP server on
         # The test file compiles only with the gate off: fail if it ran no test (zero tests pass green).
         run: |
           set -o pipefail
           cargo test --locked -p pdfcraft-automation --no-default-features --features mcp --test katwork_profile 2>&1 | tee katwork-profile-test.log
-          grep -E 'test result: ok\. [1-9][0-9]* passed' katwork-profile-test.log
+          grep -E 'test result: ok\. 2 passed; 0 failed' katwork-profile-test.log
       - name: Field Properties and Preferences offer no script, with the gate off
         # One test binary per step, so a pass from another binary cannot hide a zero.
         run: |
           set -o pipefail
           cargo test --locked -p pdfcraft-ui-egui --no-default-features --test it -- field_properties_offer_no_script_without_the_engine preferences_offer_no_javascript_page_without_the_engine 2>&1 | tee katwork-ui-test.log
-          grep -E 'test result: ok\. [1-9][0-9]* passed' katwork-ui-test.log
+          grep -E 'test result: ok\. 2 passed; 0 failed' katwork-ui-test.log
