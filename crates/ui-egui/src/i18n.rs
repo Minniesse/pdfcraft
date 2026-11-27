@@ -5,7 +5,7 @@
 //! incrementally, and a missing translation never fails a build, a test or a release.
 //!
 //! The catalogs live in [storytold/craft-i18n](https://github.com/storytold/craft-i18n)
-//! (`locales/<code>/common.tsv`, shared by the Crafting Apps, and `pdfcraft.tsv`), not in this
+//! (`locales/<code>/common.tsv`, shared by the Craft apps, and `pdfcraft.tsv`), not in this
 //! repository. `build.rs` embeds them from `CRAFT_I18N_DIR` (CI and releases check out the commit
 //! in `craft-i18n.rev`); without it the build is English only. Lookup, fallback (PdfCraft's rows
 //! over shared ones), plural forms (CLDR) and language names are the `craft-i18n` crate's

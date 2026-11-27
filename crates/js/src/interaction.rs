@@ -1,26 +1,9 @@
 //! Bounded synchronous script prompts. The worker waits; the UI never evaluates script text.
 use crate::host::{arg, error, s, text_with_budget};
-use crate::{Context, JsArray, JsResult, JsValue, Outcome, js_string};
+pub use crate::model::{InteractiveEvent, MenuItem, Prompt};
+use crate::{Context, JsArray, JsResult, JsValue, js_string};
 use std::cell::RefCell;
 use std::sync::mpsc::{self, Sender};
-#[derive(Clone, Debug, PartialEq)]
-pub struct MenuItem {
-    pub name: String,
-    pub value: String,
-    pub enabled: bool,
-    pub marked: bool,
-    pub children: Vec<MenuItem>,
-}
-#[derive(Clone, Debug, PartialEq)]
-pub enum Prompt {
-    Menu(Vec<MenuItem>),
-    Text { title: String, question: String, default: String, password: bool, label: String },
-    Alert(crate::Message),
-}
-pub enum InteractiveEvent {
-    Prompt(Prompt, Sender<Option<String>>),
-    Complete(Outcome),
-}
 thread_local! { static HOST:RefCell<Option<(Sender<InteractiveEvent>,usize)>>=const {RefCell::new(None)}; }
 /// Tell alert/menu helpers whether this worker has an interactive or deterministic reply channel.
 pub(crate) fn has_host() -> bool {

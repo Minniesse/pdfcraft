@@ -8,12 +8,11 @@ use craft::behavior::{DisplayOrder, ItemSource, SizeHint};
 use craft::keymap::CommandRef;
 use craft::theme::TypeRole;
 use craft::theme::variant::{Tone, Variant};
-use craft::ui::buttons::{Button, IconButton};
+use craft::ui::buttons::Button;
 use craft::ui::contract::Gap;
-use craft::ui::contract::{ActivateOn, CollectionEvent, Pad, Props as _, Show as _, ShowCollection as _, ShowContainer as _, clicked};
-use craft::ui::display::{PictureSize, Text};
-use craft::ui::layout_components::{Row, Stack};
-use craft::ui::list::ThumbSize;
+use craft::ui::contract::{ActivateOn, CollectionEvent, Pad, Props as _, Show as _, ShowCollection as _, ShowContainer as _};
+use craft::ui::display::Text;
+use craft::ui::layout_components::Stack;
 use craft::ui::notices::Notice;
 use craft::ui::runtime::env::Env;
 use craft::ui::sections::{HeaderStrength, Section};
@@ -22,7 +21,7 @@ use craft::ui::style::{DataColor, SurfaceKind};
 use craft::ui::tile_grid::{CaptionPlace, GridZoom, Tile, TileGrid, TilePartEvent};
 use pdfcraft_engine::catalog::{self, ToolGroup};
 
-use crate::{PdfCraftApp, brand, panels::human_size};
+use crate::{PdfCraftApp, panels::human_size};
 
 pub mod folders_ui;
 
@@ -34,8 +33,6 @@ enum Asked {
     Open,
     Unpin(&'static str),
     PinTools,
-    CloseCommunityCard,
-    Link(&'static str),
 }
 
 /// Recommended actions use the compact cards, followed by the file picker.
@@ -141,7 +138,6 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
 
     let pinned_tools: Vec<&'static ToolGroup> = app.pinned_tools.iter().filter_map(|id| catalog::group(id)).collect();
     let recommended: Vec<&'static ToolGroup> = RECOMMENDED.iter().filter(|id| !app.is_tool_pinned(id)).filter_map(|id| catalog::group(id)).collect();
-    let community_card = !app.community_card_closed;
     let asked = RefCell::new(Vec::new());
 
     // PLAN: assumed fields `recent_view: RecentView` and `recent_sort: RecentSort` on PdfCraftApp (pdf-hub-w1).
@@ -160,30 +156,6 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
         .section(StartPlace::BeforeRecent, |ui, _| {
             let _ = Text::new(tl!("Welcome to PdfCraft").to_string()).role(TypeRole::Display).show(ui);
             let _ = Text::new(tl!("An open-source PDF workbench — local, private, and scriptable.").to_string()).show(ui);
-            if community_card {
-                Stack::new().label(tl!("Join the ArtCraft community")).fill_width().surface(SurfaceKind::Raised).pad(Pad::Regular).show(
-                    ui,
-                    |ui, _| {
-                        Row::new().show(ui, |ui, _| {
-                            brand::mark(ui, PictureSize::Thumb(ThumbSize::Medium));
-                            let _ = Text::new(tl!("Join the ArtCraft community").to_string()).role(TypeRole::Heading).show(ui);
-                            if clicked(&IconButton::new(IconId::new("close")).id_salt("community-close").label(tl!("Close")).show(ui)) {
-                                asked.borrow_mut().push(Asked::CloseCommunityCard);
-                            }
-                        });
-                        let _ = Text::new(tl!("Get help, share feedback and follow development on Discord.").to_string()).show(ui);
-                        Row::new().wrap(true).show(ui, |ui, _| {
-                            for (i, link) in pdfcraft_engine::links::LINKS.iter().enumerate() {
-                                let label = if i == 0 { tl!("Join our Discord") } else { tl!(link.label) };
-                                let variant = if i == 0 { craft::theme::Variant::PRIMARY } else { craft::theme::Variant::SECONDARY };
-                                if clicked(&Button::new(label.to_string()).variant(variant).icon(IconId::new(link.icon)).show(ui)) {
-                                    asked.borrow_mut().push(Asked::Link(link.command));
-                                }
-                            }
-                        });
-                    },
-                );
-            }
             Stack::new().label(tl!("Recommended tools")).fill_width().surface(SurfaceKind::Raised).pad(Pad::Regular).show(ui, |ui, _| {
                 let _ = Text::new(tl!("Recommended tools").to_string()).role(TypeRole::Heading).show(ui);
                 recommended_grid(ui, &recommended, &asked);
@@ -254,10 +226,6 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
             Asked::Unpin(id) => app.unpin_tool(id),
             // PLAN: assumed `PdfCraftApp::open_pin_tools(&mut self)` (pdf-dialogs-w9).
             Asked::PinTools => app.open_pin_tools(),
-            Asked::CloseCommunityCard => app.community_card_closed = true,
-            Asked::Link(id) => {
-                app.execute(ui.ctx(), id);
-            }
         }
     }
 }

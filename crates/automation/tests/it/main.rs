@@ -8,17 +8,21 @@ mod backdrop;
 mod batch;
 mod batch_failures;
 mod batch_secrets;
+#[cfg(feature = "js")]
 mod button_caption;
+#[cfg(feature = "js")]
 mod document_actions;
 mod find_text;
 mod form_bulk;
 mod hostile_args;
+#[cfg(feature = "js")]
 mod link_javascript;
 mod list_selection;
 mod model_3d;
 mod model_render;
 mod office;
 mod optimize_content_boundaries;
+#[cfg(feature = "js")]
 mod page_actions;
 mod page_templates;
 mod portfolio_info;

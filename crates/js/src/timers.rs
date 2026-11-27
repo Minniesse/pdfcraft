@@ -9,24 +9,13 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 
 use crate::host::{arg, error, text};
+pub use crate::model::Timer;
 use crate::{Context, JsObject, JsResult, JsValue, MAX_SCRIPT_BYTES, ObjectInitializer};
 
 /// Most timers one document's scripts keep at once; setting another is an error.
 pub const MAX_TIMERS: usize = 64;
 /// The shortest period, in milliseconds: a timer asked to run sooner or more often runs at this.
 pub const MIN_TIMER_MS: u32 = 10;
-
-/// A timer a script set, as the realm reports it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Timer {
-    /// The realm's name for it, never reused while the realm lives.
-    pub id: u32,
-    /// Milliseconds between runs (`setInterval`) or before the one run (`setTimeOut`), at least
-    /// [`MIN_TIMER_MS`].
-    pub period_ms: u32,
-    /// `setInterval`: it runs until it is cleared. `setTimeOut`: once.
-    pub repeat: bool,
-}
 
 /// What a timer runs: its expression, or a function the script gave instead.
 #[derive(Clone)]

@@ -11,8 +11,7 @@
 //! from then on. A script that fails from a fault in the engine (a panic) loses only itself:
 //! the thread is replaced for the next script. On wasm there are no threads: scripts run here.
 
-use crate::Limits;
-use crate::xfa::{XfaDoc, XfaEvent, XfaNode, XfaOutcome};
+use crate::xfa::{XfaDoc, XfaOutcome};
 
 /// Tests: milliseconds the engine is made to take before it is ready for a script.
 #[cfg(test)]
@@ -30,19 +29,7 @@ pub fn engines_started() -> u64 {
     ENGINES_STARTED.with(std::cell::Cell::get)
 }
 
-/// What one script run needs.
-#[derive(Clone, Debug)]
-pub struct Script {
-    pub source: String,
-    pub formcalc: bool,
-    pub event: XfaEvent,
-    /// The form as the caller holds it now. Send the same `Arc` while the form is unchanged:
-    /// the next script then starts from the copy the last one was given, without flattening the
-    /// form again.
-    pub root: std::sync::Arc<XfaNode>,
-    pub limits: Limits,
-    pub timeout: std::time::Duration,
-}
+pub use crate::xfa::Script;
 
 /// Run `s` here: a fresh context (JavaScript) or interpreter (FormCalc) on its copy of the
 /// form. `started` is called once the engine is ready for the script (its context built), so

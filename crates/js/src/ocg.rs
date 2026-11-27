@@ -4,17 +4,8 @@
 //! reads the layers a run turned in [`crate::Outcome::layers`].
 
 use crate::host::{arg, error, function, host, s};
+pub use crate::model::Layer;
 use crate::{Attribute, Context, JsArray, JsResult, JsValue, NativeFunction, ObjectInitializer, js_string};
-
-/// A layer as `getOCGs` shows it.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct Layer {
-    pub name: String,
-    /// Shown now (`ocg.state`).
-    pub on: bool,
-    /// Shown as the file opens (`ocg.initState`).
-    pub initial: bool,
-}
 
 /// `this.getOCGs(nPage)`: every layer of the document, whatever the page (which pages a layer
 /// is on isn't known here), or `null` when it has none.

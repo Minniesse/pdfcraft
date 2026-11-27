@@ -6,6 +6,9 @@
 //! Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript is [`Session::set_javascript`]; with it
 //! off, scripts don't run and AF calls keep working natively.
 
+#[cfg(not(feature = "js"))]
+use crate::pdfcraft_js;
+
 use pdfcraft_forms::{Field, FieldChange, FieldEvent, FieldKind, FieldProps, ScriptResult, Scripts};
 pub use pdfcraft_js::{Limits, Message, MessageButtons, MessageIcon, Outcome, Panel, Request};
 
@@ -120,6 +123,9 @@ pub struct JsOutput {
 /// Console lines one output keeps, from every script an edit runs together (a form's
 /// calculations, say): each run's own cap ([`pdfcraft_js::xfa::MAX_CONSOLE`]) would otherwise
 /// be multiplied by the number of fields a document declares.
+/// What running or storing a script answers in a build without the `js` feature (no script engine).
+pub const NOT_AVAILABLE: &str = "JavaScript is not available in this build";
+
 pub const MAX_CONSOLE_LINES: usize = 10_000;
 /// Bytes of console text one output keeps, for the same reason.
 pub const MAX_CONSOLE_BYTES: usize = 1 << 20;
@@ -886,9 +892,16 @@ impl Session {
         }
     }
 
-    /// Whether JavaScript is on (Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript).
+    /// Whether JavaScript is on (Preferences ▸ JavaScript ▸ Enable Acrobat JavaScript). Always off
+    /// in a build without the `js` feature.
     pub fn javascript(&self) -> bool {
-        !self.js_off
+        !self.js_off()
+    }
+
+    /// JavaScript is off: by the preference, or because the build has no script engine (the `js`
+    /// feature), in which case turning it on changes nothing.
+    pub(crate) fn js_off(&self) -> bool {
+        self.js_off || !cfg!(feature = "js")
     }
 
     /// Whether the viewer highlights form fields (Highlight fields), which forms' scripts read as
@@ -930,7 +943,7 @@ impl Session {
     /// [`Session::field_focus`] for the field object `target` ([`field_object_id`]) when given:
     /// of fields sharing `name`, the one that gained or lost focus runs its own script.
     pub fn field_focus_target(&mut self, id: DocId, name: &str, target: Option<u64>, widget: usize, focus: FieldFocus) -> Result<bool, EditError> {
-        if self.js_off {
+        if self.js_off() {
             return Ok(false);
         }
         let doc = self.doc_mut(id)?;
@@ -994,7 +1007,7 @@ impl Session {
         trigger: pdfcraft_forms::Trigger,
     ) -> Result<bool, EditError> {
         use pdfcraft_forms::Trigger;
-        if self.js_off {
+        if self.js_off() {
             return Ok(false);
         }
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
@@ -1069,7 +1082,7 @@ impl Session {
 
     /// The SOM path of signature field `field` when it has scripts for `event` to run.
     fn sign_event_som(&self, id: DocId, field: &str, event: SignEvent) -> Option<String> {
-        if self.js_off {
+        if self.js_off() {
             return None;
         }
         let doc = self.get(id)?;
@@ -1120,7 +1133,7 @@ impl Session {
     /// (its own opening scripts run instead) or with JavaScript off. What they showed or asked
     /// for waits in [`Session::take_js_output`].
     pub(crate) fn run_open_scripts(&mut self, id: DocId) {
-        if self.js_off {
+        if self.js_off() {
             return;
         }
         let Some(doc) = self.get(id).filter(|d| d.info.xfa.is_none()) else { return };
@@ -1152,7 +1165,7 @@ impl Session {
     /// lose the user's work. Requests are limited to what an unasked script may make. With
     /// JavaScript off, on an XFA form, or with no such action, nothing runs.
     pub fn run_document_actions(&mut self, id: DocId, event: DocumentScriptEvent) -> JsOutput {
-        if self.js_off {
+        if self.js_off() {
             return JsOutput::default();
         }
         let Some(doc) = self.get(id).filter(|d| d.info.xfa.is_none()) else { return JsOutput::default() };
@@ -1187,7 +1200,10 @@ impl Session {
         event_name: Option<&'static str>,
         opening: bool,
     ) -> Result<Outcome, EditError> {
-        if self.js_off {
+        if !cfg!(feature = "js") {
+            return Err(EditError::Invalid(NOT_AVAILABLE.into()));
+        }
+        if self.js_off() {
             return Err(EditError::Invalid("JavaScript is turned off (Preferences ▸ JavaScript)".into()));
         }
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
@@ -1506,6 +1522,7 @@ mod review_tests {
 
     /// A click returns its own alert when the output waiting in the document is full, and the
     /// waiting output stays.
+    #[cfg(feature = "js")]
     #[test]
     fn a_click_returns_its_alert_when_the_waiting_output_is_full() {
         let mut s = Session::new();
@@ -1623,6 +1640,7 @@ mod review_tests {
         assert_eq!(count(&merged), 2, "the field's copy stays; the document script's is listed once");
     }
 
+    #[cfg(feature = "js")]
     #[test]
     fn duplicate_field_names_diff_against_first_original() {
         let first = pdfcraft_js::FieldState::new("duplicate", pdfcraft_js::FieldType::Text, vec!["first".into()]);
@@ -1665,6 +1683,7 @@ mod review_tests {
 }
 
 #[cfg(test)]
+#[cfg(feature = "js")]
 mod caption_tests {
     use super::*;
 
@@ -1726,7 +1745,7 @@ impl Session {
         page: usize,
         index: usize,
     ) -> Result<(pdfcraft_js::session::Job, std::sync::Arc<Vec<pdfcraft_js::FieldState>>), EditError> {
-        if self.js_off {
+        if self.js_off() {
             return Err(EditError::Invalid("JavaScript is turned off (Preferences ▸ JavaScript)".into()));
         }
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
@@ -1818,7 +1837,7 @@ pub struct PendingScript {
 impl Session {
     /// Check document identity/generation and the JavaScript preference before accepting a worker completion.
     pub fn script_pending_current(&self, p: &PendingScript) -> bool {
-        !self.js_off && self.get(p.id).is_some_and(|d| d.generation == p.generation && std::sync::Arc::ptr_eq(&d.js_runtime, &p.runtime))
+        !self.js_off() && self.get(p.id).is_some_and(|d| d.generation == p.generation && std::sync::Arc::ptr_eq(&d.js_runtime, &p.runtime))
     }
     /// Capture the current fields/view and start a native script without blocking the caller on its prompts.
     pub fn start_javascript(&mut self, id: DocId, script: &str, target: Option<&str>) -> Result<PendingScript, EditError> {
@@ -1832,7 +1851,7 @@ impl Session {
         target: Option<&str>,
         target_id: Option<u64>,
     ) -> Result<PendingScript, EditError> {
-        if self.js_off {
+        if self.js_off() {
             return Err(EditError::Invalid("JavaScript is disabled".into()));
         }
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
@@ -1944,6 +1963,7 @@ thread_local! {
 mod snapshot_review_tests {
     use super::*;
 
+    #[cfg(feature = "js")]
     #[test]
     fn document_actions_use_the_document_realm_and_obey_javascript_setting() {
         let mut session = Session::new();
@@ -1965,6 +1985,7 @@ mod snapshot_review_tests {
     }
 
     /// Real page/info edits and completed Save As refresh metadata without losing script state.
+    #[cfg(feature = "js")]
     #[test]
     fn retained_document_metadata_tracks_edits_undo_and_save_as() {
         let mut session = Session::new();
@@ -1993,6 +2014,7 @@ mod snapshot_review_tests {
     }
 
     /// A batch child that changes page structure or calculation sources invalidates cached plans.
+    #[cfg(feature = "js")]
     #[test]
     fn batch_children_refresh_geometry_metadata_and_calculation_sources() {
         let mut session = Session::new();
@@ -2086,6 +2108,7 @@ mod snapshot_review_tests {
 
     /// A callback reuses the previous callback's snapshot, patching only values that changed,
     /// and a snapshot a caller still holds is never changed under it.
+    #[cfg(feature = "js")]
     #[test]
     fn callback_snapshots_are_patched_in_place_and_copied_only_when_shared() {
         let mut session = Session::new();
@@ -2120,6 +2143,7 @@ mod snapshot_review_tests {
     }
 
     /// Operation counts, rather than wall time, pin the absence of per-field tree/plan walks.
+    #[cfg(feature = "js")]
     #[test]
     fn field_events_reuse_page_geometry_and_calculation_plans() {
         let mut session = Session::new();
@@ -2238,6 +2262,7 @@ mod widget_budget_review_tests {
 }
 
 #[cfg(test)]
+#[cfg(feature = "js")]
 mod icon_mixed_review_tests {
     use super::*;
     /// Mixed widgets need a field-wide icon delta even when the first icon is already correct.

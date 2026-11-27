@@ -1,0 +1,5 @@
+# <package> <native|wasm32> <katwork-features|-> <crate> <present|absent> (see scripts/katwork-profile.sh)
+pdfcraft-cli native mcp pdfcraft-js present
+pdfcraft-cli native mcp boa_engine present
+pdfcraft-web wasm32 - pdfcraft-js present
+pdfcraft-web wasm32 - boa_engine present

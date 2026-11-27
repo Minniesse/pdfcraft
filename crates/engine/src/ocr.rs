@@ -1301,6 +1301,7 @@ mod tests {
     /// #5080: [`recognize_file`] opens each file with the caller's JavaScript preference, so an
     /// XFA initialize script (it sets an empty `qty` to 2) runs only when that is on. This checks
     /// the open path without the recognition models, which the end-to-end test needs.
+    #[cfg(feature = "js")]
     #[test]
     fn files_open_for_recognition_with_the_callers_javascript_preference() {
         let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));

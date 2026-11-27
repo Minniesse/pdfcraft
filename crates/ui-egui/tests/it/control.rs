@@ -1492,6 +1492,7 @@ fn invalid_panel_requests_change_nothing() {
 }
 
 /// #3580 review: a panel a script opens (`app.execMenuItem("ShowHideBookmarks")`) is shown.
+#[cfg(feature = "js")]
 #[test]
 fn a_script_opened_panel_shows() {
     let (mut h, c) = harness();

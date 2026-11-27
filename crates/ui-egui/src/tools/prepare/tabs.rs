@@ -13,7 +13,7 @@ use craft::ui::list::{List, ListRow, RowEvent, TrailingFace, TrailingPart};
 use craft::ui::runtime::env::Label;
 use craft::ui::text::TextField;
 
-use super::draft::{ACTION_KINDS, ActionDraft, FieldDraft};
+use super::draft::{ACTION_KINDS, ActionDraft, FieldDraft, RUN_JAVASCRIPT, action_kind_offered};
 use super::properties::{check, code_row, count_row, note, select_row, text_row};
 use super::{CalcOp, Calculate, DATE_PRESETS, Format, TIME_PRESETS, Validate, format_value};
 
@@ -203,11 +203,12 @@ pub(super) fn actions_tab(ui: &mut egui::Ui, d: &mut FieldDraft) {
     Stack::new().enabled(!editing).show(ui, |ui, _| {
         let triggers: Vec<Entry<T>> = T::ALL.iter().map(|tr| Entry::new(*tr, tl!(tr.label()))).collect();
         select_row(ui, "action-trigger", tl!("Select Trigger:"), &mut d.new_action.trigger, &triggers);
-        let kinds: Vec<Entry<usize>> = ACTION_KINDS.iter().enumerate().map(|(i, k)| Entry::new(i, tl!(k))).collect();
+        let kinds: Vec<Entry<usize>> =
+            ACTION_KINDS.iter().enumerate().filter(|(i, _)| action_kind_offered(*i)).map(|(i, k)| Entry::new(i, tl!(k))).collect();
         select_row(ui, "action-kind", tl!("Select Action:"), &mut d.new_action.kind, &kinds);
     });
     let a = &mut d.new_action;
-    if a.kind == 0 {
+    if a.kind == RUN_JAVASCRIPT {
         code_row(ui, "action-text", tl!("Script:"), &mut a.text, 3);
     } else {
         let hint = match a.kind {
@@ -264,7 +265,7 @@ pub(super) fn actions_tab(ui: &mut egui::Ui, d: &mut FieldDraft) {
             let delete = Label::from(crate::i18n::fmt(tl!("Delete {o}"), &[("o", tl!(tr.label()))]));
             let mut item =
                 ListRow::new(format!("{}: {summary}", tl!(tr.label()))).trailing_part(DELETE, TrailingFace::Strong(tl!("Delete").into()), delete);
-            if !editing && matches!(act, pdfcraft_engine::FieldAction::JavaScript(_)) {
+            if !editing && action_kind_offered(RUN_JAVASCRIPT) && matches!(act, pdfcraft_engine::FieldAction::JavaScript(_)) {
                 item = item.trailing_part(EDIT, TrailingFace::Strong(tl!("Edit").into()), tl!("Edit"));
             }
             item
@@ -284,7 +285,7 @@ pub(super) fn actions_tab(ui: &mut egui::Ui, d: &mut FieldDraft) {
         Some((tr, pdfcraft_engine::FieldAction::JavaScript(js))) if d.editing.is_none() => Some((*tr, js.clone())),
         _ => None,
     }) {
-        d.new_action = ActionDraft { trigger, kind: 0, text };
+        d.new_action = ActionDraft { trigger, kind: RUN_JAVASCRIPT, text };
         d.editing = Some(trigger);
     }
     if let Some(i) = remove.filter(|i| *i < d.actions.len()) {
@@ -328,6 +329,12 @@ pub(super) fn calculate_tab(ui: &mut egui::Ui, d: &mut FieldDraft) {
         (Mode::Notation, tl!("Simplified field notation:")),
         (Mode::Custom, tl!("Custom calculation script:")),
     ];
+    // Without the script engine (the `js` feature) a custom script is neither offered nor edited; a
+    // field that has one keeps it unless another calculation is chosen.
+    let options: Vec<(Mode, &str)> = options.into_iter().filter(|(o, _)| cfg!(feature = "js") || *o != Mode::Custom).collect();
+    if !cfg!(feature = "js") && mode == Mode::Custom {
+        note(ui, tl!("This field is calculated by a script, which this build neither runs nor edits. Choose another calculation to replace it."));
+    }
     let calculate = &mut d.calculate;
     let (others, refused) = (&d.others, &mut d.script_refused);
     radios(ui, tl!("Calculation"), &mut m, &options, |ui, shown| match (shown, &mut *calculate) {

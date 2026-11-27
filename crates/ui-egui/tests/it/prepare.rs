@@ -335,15 +335,19 @@ fn format_validate_and_calculate_tabs() {
     assert_eq!(f.actions.calculate, Calculate::Notation("name".into()));
 }
 
+#[cfg(feature = "js")]
 /// The radio of the Calculate tab's custom calculation script (#6630).
 const CUSTOM: &str = "Custom calculation script:";
 
+#[cfg(feature = "js")]
 /// What the Calculate tab says when an edit would take the custom script past 256 KiB.
 const REFUSAL: &str = "A script edited here can be at most 256 KiB long; that change wasn't made.";
 
+#[cfg(feature = "js")]
 /// The longest custom script the Calculate tab edits, in bytes.
 const MAX_EDITED_SCRIPT: usize = 256 * 1024;
 
+#[cfg(feature = "js")]
 /// The harness in Prepare Form, with `city`'s calculation set to `js`, a script of its own.
 fn with_calculate_script(js: &str) -> Harness<'static, PdfCraftApp> {
     let mut h = harness();
@@ -353,6 +357,7 @@ fn with_calculate_script(js: &str) -> Harness<'static, PdfCraftApp> {
     h
 }
 
+#[cfg(feature = "js")]
 /// Sets `city`'s calculate script, as form_set_script does.
 fn set_calculate_script(h: &mut Harness<'static, PdfCraftApp>, js: &str) {
     let edit = pdfcraft_engine::Edit::SetFieldScript { name: "city".into(), event: "calculate".into(), script: Some(js.into()) };
@@ -367,6 +372,7 @@ fn open_calculate(h: &mut Harness<'static, PdfCraftApp>, name: &str) {
     tab(h, "Calculate");
 }
 
+#[cfg(feature = "js")]
 /// Clicks the dialog button `label` (OK or Cancel).
 fn press(h: &mut Harness<'static, PdfCraftApp>, label: &str) {
     h.get_by_label(label).click();
@@ -379,12 +385,14 @@ fn choose(h: &mut Harness<'static, PdfCraftApp>, label: &str) {
     h.run_steps(2);
 }
 
+#[cfg(feature = "js")]
 /// Whether the Calculate tab's radio `label` is selected.
 fn chosen(h: &Harness<'static, PdfCraftApp>, label: &str) -> bool {
     use egui_kittest::kittest::NodeT;
     h.get_by_role_and_label(Role::RadioButton, label).accesskit_node().toggled() == Some(egui::accesskit::Toggled::True)
 }
 
+#[cfg(feature = "js")]
 /// `city`'s calculation as the document has it: the recognised one and the script of its own.
 fn city_calculation(h: &Harness<'static, PdfCraftApp>) -> (pdfcraft_engine::form_scripts::Calculate, Option<String>) {
     let s = h.state();
@@ -394,6 +402,7 @@ fn city_calculation(h: &Harness<'static, PdfCraftApp>) -> (pdfcraft_engine::form
 
 /// The Calculate tab's box for a formula in simplified field notation.
 const NOTATION: &str = "Simplified field notation:";
+#[cfg(feature = "js")]
 /// The Actions tab's box for a Run a JavaScript action's script.
 const ACTION_SCRIPT: &str = "Script:";
 
@@ -402,11 +411,13 @@ fn boxes(h: &Harness<'static, PdfCraftApp>, label: &str) -> Vec<String> {
     h.query_all_by_role_and_label(Role::MultilineTextInput, label).filter_map(|n| n.value()).collect()
 }
 
+#[cfg(feature = "js")]
 /// What each custom calculation script box on the tab holds.
 fn script_boxes(h: &Harness<'static, PdfCraftApp>) -> Vec<String> {
     boxes(h, CUSTOM)
 }
 
+#[cfg(feature = "js")]
 /// The script box's description: what a screen reader says about it besides its text.
 fn script_box_description(h: &Harness<'static, PdfCraftApp>) -> Option<String> {
     use egui_kittest::kittest::NodeT;
@@ -422,11 +433,13 @@ fn retype_box(h: &mut Harness<'static, PdfCraftApp>, label: &str, text: &str) {
     h.run_steps(2);
 }
 
+#[cfg(feature = "js")]
 /// Selects everything in the custom calculation script box and types `text` over it.
 fn retype_script(h: &mut Harness<'static, PdfCraftApp>, text: &str) {
     retype_box(h, CUSTOM, text);
 }
 
+#[cfg(feature = "js")]
 /// Pastes `text` into the script box where its cursor is.
 fn paste_script(h: &mut Harness<'static, PdfCraftApp>, text: &str) {
     h.get_by_role_and_label(Role::MultilineTextInput, CUSTOM).click();
@@ -438,6 +451,7 @@ fn paste_script(h: &mut Harness<'static, PdfCraftApp>, text: &str) {
 /// A field whose calculation is a script of its own shows it on the Calculate tab as a custom
 /// calculation script, not as "Value is not calculated" (#6630); another choice and back brings
 /// the script back, and OK without a change keeps it.
+#[cfg(feature = "js")]
 #[test]
 fn the_calculate_tab_shows_a_custom_calculation_script() {
     let js = "event.value = \"*\" + this.getField(\"name\").value + \"*\";";
@@ -459,6 +473,7 @@ fn the_calculate_tab_shows_a_custom_calculation_script() {
 
 /// Only a script that is no sum or notation opens as a custom script: a sum stays a sum, and a
 /// field with no calculation opens on "Value is not calculated", with no script box.
+#[cfg(feature = "js")]
 #[test]
 fn a_sum_or_no_calculation_does_not_open_as_a_custom_script() {
     let mut h = with_calculate_script("AFSimple_Calculate(\"SUM\", new Array(\"name\"));");
@@ -474,6 +489,7 @@ fn a_sum_or_no_calculation_does_not_open_as_a_custom_script() {
 }
 
 /// An edited custom script is written as typed, and "Value is not calculated" removes it.
+#[cfg(feature = "js")]
 #[test]
 fn an_edited_custom_script_is_written_and_no_calculation_removes_it() {
     use pdfcraft_engine::form_scripts::Calculate;
@@ -494,6 +510,7 @@ fn an_edited_custom_script_is_written_and_no_calculation_removes_it() {
 /// one past it, by a byte or by a multi-byte paste of fewer characters, is refused, the box keeps
 /// what it had, and the refusal is said beside the box and in its description until the next edit
 /// is taken.
+#[cfg(feature = "js")]
 #[test]
 fn an_edit_past_256_kib_is_refused_and_the_next_edit_is_taken() {
     use pdfcraft_engine::form_scripts::Calculate;
@@ -525,6 +542,7 @@ fn an_edit_past_256_kib_is_refused_and_the_next_edit_is_taken() {
 
 /// The refusal is forgotten when another calculation is chosen or the dialog is opened again, and
 /// choosing Custom again brings back the field's own script, not an edit that was left.
+#[cfg(feature = "js")]
 #[test]
 fn a_refusal_is_forgotten_on_another_choice_or_reopening() {
     use pdfcraft_engine::form_scripts::Calculate;
@@ -551,6 +569,7 @@ fn a_refusal_is_forgotten_on_another_choice_or_reopening() {
 
 /// A script past 256 KiB isn't edited: the box shows its start, read-only (cut at a character, not
 /// inside one), says why, and OK keeps the whole script.
+#[cfg(feature = "js")]
 #[test]
 fn a_script_past_256_kib_shows_its_start_and_is_kept() {
     use pdfcraft_engine::form_scripts::Calculate;
@@ -1176,6 +1195,7 @@ fn image_fields_take_a_picture_when_clicked() {
     assert_eq!(s.session.get(s.views[0].id).unwrap().can_undo(), Some("Set the image of Image1"));
 }
 
+#[cfg(feature = "js")]
 /// Adds an action on the Actions tab: picks its trigger and kind, types its script or value, and
 /// presses Add.
 fn add_action(h: &mut Harness<'static, PdfCraftApp>, trigger: &str, kind: &str, text: &str) {
@@ -1190,6 +1210,8 @@ fn add_action(h: &mut Harness<'static, PdfCraftApp>, trigger: &str, kind: &str, 
     h.run_steps(2);
 }
 
+// Adds or edits a "Run a JavaScript" action, which needs the script engine (the `js` feature).
+#[cfg(feature = "js")]
 #[test]
 fn actions_tab_adds_and_removes_actions() {
     use pdfcraft_engine::{FieldAction, FieldTrigger};
@@ -1216,6 +1238,8 @@ fn actions_tab_adds_and_removes_actions() {
     );
 }
 
+// Adds or edits a "Run a JavaScript" action, which needs the script engine (the `js` feature).
+#[cfg(feature = "js")]
 #[test]
 fn actions_tab_edits_the_script_of_an_existing_action() {
     use pdfcraft_engine::{FieldAction, FieldTrigger};
@@ -1269,6 +1293,7 @@ fn actions_tab_edits_the_script_of_an_existing_action() {
     );
 }
 
+#[cfg(feature = "js")]
 /// One page with a push button "go": Mouse Up runs a script with a link chained after it, On Blur
 /// runs another script.
 fn chained_action_fixture() -> Vec<u8> {
@@ -1357,6 +1382,8 @@ fn a_radio_button_joining_a_group_by_name_stays_selected() {
     assert_eq!(rects(&h), nudged);
 }
 
+// Adds or edits a "Run a JavaScript" action, which needs the script engine (the `js` feature).
+#[cfg(feature = "js")]
 #[test]
 fn actions_tab_shows_a_chain_and_keeps_it_when_the_first_action_is_replaced() {
     use egui_kittest::kittest::NodeT;
@@ -1952,6 +1979,7 @@ fn a_notation_that_cannot_be_stored_keeps_field_properties_open() {
 /// A formula that reads a field the form doesn't have gets a card of its own, in place of "every
 /// field calculates after the fields it reads", and its link opens that formula. A script that
 /// builds the names it reads gets a note.
+#[cfg(feature = "js")]
 #[test]
 fn a_formula_reading_a_missing_field_has_its_own_card() {
     use pdfcraft_engine::form_scripts::Calculate;
@@ -2111,4 +2139,25 @@ fn with_prepare_open_a_double_click_on_a_field_leaves_the_polygon_unfinished() {
     let polygons = s.session.get(s.views[0].id).unwrap().info.annotations.iter().filter(|a| a.subtype == "Polygon").count();
     assert_eq!(polygons, 0, "the polygon is not finished");
     assert!(!s.views[0].session.comments.tool.drawing().is_empty(), "it is still being clicked out");
+}
+
+/// Without the script engine (the `js` feature) Field Properties offers no script: the Actions tab has no
+/// "Run a JavaScript" action, and the Calculate tab no custom calculation script.
+#[cfg(not(feature = "js"))]
+#[test]
+fn field_properties_offer_no_script_without_the_engine() {
+    let mut h = harness();
+    h.execute("form.prepare");
+    h.run_steps(2);
+    open_props(&mut h, "city");
+    tab(&mut h, "Actions");
+    h.get_by_label("Select Action:").click();
+    h.run_steps(2);
+    h.get_all_by_label("Open a web link").last().expect("the list offers the other actions");
+    assert!(h.query_all_by_label("Run a JavaScript").next().is_none(), "a script action is offered");
+    h.key_press(egui::Key::Escape);
+    h.run_steps(2);
+    tab(&mut h, "Calculate");
+    h.get_by_label("Value is not calculated");
+    assert!(h.query_all_by_label("Custom calculation script:").next().is_none(), "a custom calculation script is offered");
 }

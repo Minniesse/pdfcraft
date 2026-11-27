@@ -42,6 +42,7 @@ mod document_links;
 mod editing;
 mod editor_taps;
 mod export;
+#[cfg(feature = "js")]
 mod field_triggers;
 mod fill_sign;
 mod find_replace;

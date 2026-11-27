@@ -4,7 +4,7 @@
 
 **Creature:** a lion, in a frontal head-and-shoulders portrait, mane running off the bottom of the tile.
 
-**Style:** an engraving (woodcut-weight line work) portrait in the Crafting Apps "owl template" framing:
+**Style:** an engraving (woodcut-weight line work) portrait in the "owl template" framing the other apps' icons use:
 a full-bleed colour field, no frame or roundel, the animal looking at the viewer and filling the tile.
 
 **Palette:** exactly three colours.

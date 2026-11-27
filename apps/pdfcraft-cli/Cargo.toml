@@ -33,6 +33,8 @@ craft-image-codecs = { workspace = true }
 winresource = "0.1"
 
 [features]
-default = ["mcp"]
+default = ["mcp", "js"]
 # The opt-in MCP server (`pdfcraft-cli mcp`). Build with --no-default-features to leave it out.
 mcp = ["pdfcraft-automation/mcp"]
+# Document, field and XFA scripts (see pdfcraft-engine). The KatWork build turns it off and keeps `mcp`.
+js = ["pdfcraft-engine/js", "pdfcraft-automation/js"]

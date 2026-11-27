@@ -5,6 +5,11 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[features]
+default = ["js"]
+# Document, field and XFA scripts (see pdfcraft-engine).
+js = ["pdfcraft-engine/js", "pdfcraft-ui-egui/js"]
+
 [lints]
 workspace = true
 

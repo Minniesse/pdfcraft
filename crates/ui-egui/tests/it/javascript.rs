@@ -7,7 +7,9 @@ use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
 // PLAN: assumed `pdfcraft_ui_egui::JsDialog` with `DocumentScripts(DocJsDraft)` and `Console` (pdf-forms-w17)
 use crate::support::AppHarness as _;
-use pdfcraft_ui_egui::{JsDialog, PdfCraftApp};
+#[cfg(feature = "js")]
+use pdfcraft_ui_egui::JsDialog;
+use pdfcraft_ui_egui::PdfCraftApp;
 
 /// A form with a text field and a push button whose Mouse Up script fills it in.
 fn form() -> Vec<u8> {
@@ -53,12 +55,14 @@ fn harness() -> Harness<'static, PdfCraftApp> {
     h
 }
 
+#[cfg(feature = "js")]
 fn value(h: &Harness<'static, PdfCraftApp>, name: &str) -> Vec<String> {
     let app = h.state();
     let id = app.active_ids().unwrap().1;
     app.session.get(id).unwrap().form.iter().find(|f| f.name == name).unwrap().value.clone()
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn console_runs_scripts_against_the_document() {
     let mut h = harness();
@@ -83,6 +87,7 @@ fn console_runs_scripts_against_the_document() {
 }
 
 /// A button's script fills a field and its message takes the toast.
+#[cfg(feature = "js")]
 #[test]
 fn button_scripts_run_and_alert() {
     let mut h = harness();
@@ -93,6 +98,7 @@ fn button_scripts_run_and_alert() {
     wait_value(&mut h, "greeting", "Hello from JavaScript");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn text_widget_mouse_up_runs_its_menu_and_keeps_the_result() {
     let mut h = Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_eframe(|cc| {
@@ -166,6 +172,7 @@ fn dismiss_all(h: &mut Harness<'static, PdfCraftApp>) {
 /// (#4293), the next is posted when the first ends, and a notice raised meanwhile doesn't lose the
 /// ones still waiting. Messages past the queue's room are counted and reported once the rest have
 /// been shown, and a count the card limit dropped is said again.
+#[cfg(feature = "js")]
 #[test]
 fn every_message_a_script_shows_takes_the_toast_in_turn() {
     let mut h = harness();
@@ -220,6 +227,7 @@ fn every_message_a_script_shows_takes_the_toast_in_turn() {
     assert!(!texts(&h).iter().any(|t| t == left_out), "and once only: {:?}", texts(&h));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn document_scripts_and_preferences() {
     let mut h = harness();
@@ -316,6 +324,7 @@ fn wait_for(h: &mut Harness<'static, PdfCraftApp>, label: &str) {
     }
     panic!("script dialog did not show {label}");
 }
+#[cfg(feature = "js")]
 /// Advance bounded UI frames until the worker completion updates the expected synthetic field value.
 fn wait_value(h: &mut Harness<'static, PdfCraftApp>, name: &str, expected: &str) {
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(12);
@@ -328,6 +337,7 @@ fn wait_value(h: &mut Harness<'static, PdfCraftApp>, name: &str, expected: &str)
     }
     assert_eq!(value(h, name), [expected]);
 }
+#[cfg(feature = "js")]
 #[test]
 /// Every native script prompt identifies its document, even with misleading or empty titles.
 fn native_script_prompts_show_an_app_owned_caption() {
@@ -381,6 +391,7 @@ fn native_script_prompt_uses_the_german_catalog_when_available() {
     assert!(h.query_by_label(tr(german, warning)).is_some());
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// A real UI menu followed by input resumes once and does not leak the menu click into the next modal.
 fn native_button_popup_and_response_resume_without_replaying_the_script() {
@@ -409,6 +420,7 @@ fn native_button_popup_and_response_resume_without_replaying_the_script() {
         wait_value(&mut h, "greeting", if typed { "08:00/typed answer/1" } else { "08:00/x/1" });
     }
 }
+#[cfg(feature = "js")]
 #[test]
 /// Cancelling a native menu returns null to the same invocation without duplicating preceding work.
 fn native_popup_cancellation_returns_null_and_preserves_the_single_invocation() {
@@ -426,6 +438,7 @@ fn native_popup_cancellation_returns_null_and_preserves_the_single_invocation() 
 }
 
 /// A nested menu exposes only enabled leaves as valid replies to the waiting script.
+#[cfg(feature = "js")]
 #[test]
 fn native_popup_submenu_keeps_disabled_items_unselectable() {
     let mut h = harness();
@@ -444,6 +457,7 @@ fn native_popup_submenu_keeps_disabled_items_unselectable() {
     wait_value(&mut h, "greeting", "chosen/1");
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// An intervening document edit prevents an older pending script result from replacing current values.
 fn native_popup_completion_is_discarded_after_the_document_is_edited() {
@@ -471,6 +485,7 @@ fn native_popup_completion_is_discarded_after_the_document_is_edited() {
 }
 
 /// Native Mouse Up must expose the same willCommit flag as the headless button path.
+#[cfg(feature = "js")]
 #[test]
 fn native_button_events_match_headless_will_commit() {
     let mut h = harness();
@@ -482,6 +497,7 @@ fn native_button_events_match_headless_will_commit() {
 }
 
 /// A real pointer click must retain the second same-named button through native completion.
+#[cfg(feature = "js")]
 #[test]
 fn clicking_duplicate_named_buttons_targets_the_clicked_object() {
     let _gpu = crate::gpu();

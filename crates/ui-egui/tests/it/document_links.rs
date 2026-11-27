@@ -10,6 +10,7 @@ use pdfcraft_ui_egui::{LinkOrigin, PdfCraftApp, PendingLink};
 use crate::gpu;
 use crate::support::AppHarness as _;
 
+#[cfg(feature = "js")]
 /// Runs the button script of field `field` in document `id`, with the harness's context.
 fn run_button_script(h: &mut Harness<'static, PdfCraftApp>, id: pdfcraft_engine::DocId, field: &str, script: &str) {
     let ctx = h.ctx.clone();
@@ -520,6 +521,7 @@ fn a_button_script_cannot_open_a_local_program() {
     assert!(toast.contains("“file:” address"), "{toast}");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_script_asks_first_and_only_once() {
     let _gpu = gpu();
@@ -532,6 +534,7 @@ fn a_script_asks_first_and_only_once() {
     assert!(support::step_collecting_urls(&mut h, 1).is_empty());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_script_cannot_open_other_kinds_of_address() {
     let _gpu = gpu();
@@ -558,6 +561,7 @@ fn a_script_cannot_open_other_kinds_of_address() {
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn an_email_link_cannot_attach_a_local_file() {
     let _gpu = gpu();
@@ -574,6 +578,7 @@ fn an_email_link_cannot_attach_a_local_file() {
     }
 }
 
+#[cfg(feature = "js")]
 /// Ask to open `url` from a script and return the harness with the prompt showing.
 fn prompt_for(url: &str) -> Harness<'static, PdfCraftApp> {
     let mut h = harness();
@@ -585,6 +590,7 @@ fn prompt_for(url: &str) -> Harness<'static, PdfCraftApp> {
     h
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_lookalike_host_is_shown_in_punycode_and_flagged() {
     let _gpu = gpu();
@@ -595,6 +601,7 @@ fn a_lookalike_host_is_shown_in_punycode_and_flagged() {
     h.get_by_label_contains("mixes letters from different alphabets");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn an_international_host_is_shown_in_punycode_and_marked() {
     let _gpu = gpu();
@@ -605,6 +612,7 @@ fn an_international_host_is_shown_in_punycode_and_marked() {
     assert!(h.query_by_label_contains("mixes letters").is_none());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_numeric_host_is_shown_as_the_address_it_goes_to() {
     let _gpu = gpu();

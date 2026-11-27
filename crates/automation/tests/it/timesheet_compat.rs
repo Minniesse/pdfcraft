@@ -1,6 +1,8 @@
 //! Original synthetic workflow: no private timesheet, employee, PIN or signature assets.
 use pdfcraft_automation::{Automation, Content};
-use pdfcraft_cos::{Dict, Document, Object, SaveOptions, Stream, write_full};
+#[cfg(feature = "js")]
+use pdfcraft_cos::{Dict, Object, SaveOptions, Stream};
+use pdfcraft_cos::{Document, write_full};
 use pdfcraft_engine::{Edit, NewField, Session};
 use serde_json::{Value, json};
 use std::sync::Arc;
@@ -12,6 +14,7 @@ fn call(a: &mut Automation, name: &str, args: Value) -> Value {
         _ => panic!("expected JSON"),
     }
 }
+#[cfg(feature = "js")]
 /// Construct a synthetic form and transparent Form XObject without private files or font assets.
 fn fixture() -> Vec<u8> {
     let mut session = Session::new();
@@ -50,6 +53,7 @@ fn fixture() -> Vec<u8> {
     doc.update_dict(source, |d| d.set(b"MK".to_vec(), Object::Dict(mk))).unwrap();
     write_full(&doc, &SaveOptions::default()).unwrap()
 }
+#[cfg(feature = "js")]
 const HELPERS: &str = r#"
 var initialized=1, buffer='', savedIcon=null;
 function openPad(){var b=getPageBox('Crop',0);var f=getField('go');f.rect=[b[0]+40,b[1]-400,b[0]+200,b[1]-450];f.textSize=16;f.fillColor=['RGB',0.9,0.8,0.7];f.strokeColor=['G',0.4];f.lineWidth=2;f.borderStyle='dashed';f.textColor=color.blue;f.userName='Synthetic keypad';f.display=display.noPrint;}
@@ -57,6 +61,7 @@ function digit(d){buffer+=d;getField('go').buttonSetCaption(buffer);if(buffer===
 function selectTime(){var v=app.popUpMenuEx({cName:'Unavailable',cReturn:'bad',bEnabled:false},{cName:'Times',oSubMenu:[{cName:'Seven',cReturn:'07:00',bMarked:true},{cName:'Manual',cReturn:'manual'}]});if(v==='manual')v=app.response({cQuestion:'Time',cDefault:'07:00'});if(v!==null)getField('choice').value=v;}
 "#;
 
+#[cfg(feature = "js")]
 #[test]
 /// Exercise retained keypad state, geometry, synchronous calculation and transparent icons through save/reopen and Undo/Redo.
 fn timesheet_keypad_geometry_icons_calculation_and_persistence() {
@@ -130,6 +135,7 @@ fn timesheet_keypad_geometry_icons_calculation_and_persistence() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// Resume one invocation across popup/text prompts and reject disabled or invented choices.
 fn popup_and_manual_response_resume_the_same_script_and_validate_choices() {
@@ -158,6 +164,7 @@ fn prompt_answer_schema_advertises_the_length_budget() {
     assert_eq!(tool.input_schema["properties"]["answers"]["items"]["maxLength"], 4096);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn js_run_exact_field_ids_are_discoverable_and_strictly_validated() {
     let dir = std::env::temp_dir().join(format!("pdfcraft-field-identity-{}", std::process::id()));

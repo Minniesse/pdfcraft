@@ -24,6 +24,15 @@ pub const ACTION_KINDS: [&str; 8] = [
     "Submit a form",
 ];
 
+/// The "Run a JavaScript" choice of [`ACTION_KINDS`].
+pub const RUN_JAVASCRIPT: usize = 0;
+
+/// Whether the Actions tab offers action kind `kind`: without the script engine (the `js`
+/// feature) it offers no script to add or edit.
+pub fn action_kind_offered(kind: usize) -> bool {
+    cfg!(feature = "js") || kind != RUN_JAVASCRIPT
+}
+
 /// Actions tab: the action being added.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ActionDraft {
@@ -35,7 +44,8 @@ pub struct ActionDraft {
 
 impl Default for ActionDraft {
     fn default() -> Self {
-        ActionDraft { trigger: pdfcraft_engine::FieldTrigger::MouseUp, kind: 0, text: String::new() }
+        let kind = (0..ACTION_KINDS.len()).find(|k| action_kind_offered(*k)).unwrap_or(RUN_JAVASCRIPT);
+        ActionDraft { trigger: pdfcraft_engine::FieldTrigger::MouseUp, kind, text: String::new() }
     }
 }
 

@@ -3,8 +3,7 @@
 
 use std::sync::Arc;
 
-use super::super::{XfaDoc, XfaEvent, XfaKind, XfaNode, XfaOutcome, run_xfa};
-use super::{XfaProp, XfaProps};
+use super::super::{XfaDoc, XfaEvent, XfaKind, XfaNode, XfaOutcome, XfaProp, XfaProps, run_xfa};
 use crate::Limits;
 
 fn p(tag: &str, attrs: &[(&str, &str)], children: Vec<XfaProp>) -> XfaProp {

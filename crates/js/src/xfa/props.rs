@@ -21,27 +21,9 @@ use boa_engine::{Context, JsError, JsNativeError, JsObject, JsResult, JsString, 
 
 use super::host::host;
 use super::nodes::node_object;
-use super::{XHost, XfaKind};
+use super::{XHost, XfaKind, XfaProp};
 use crate::host::text_line;
 use crate::{arg, error, function, s, text};
-
-/// One property element of a template object, as the template writes it: its tag, attributes,
-/// text (elements that hold text, such as `picture`, `toolTip` or a `message`'s `text`) and its
-/// own property elements.
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct XfaProp {
-    pub tag: String,
-    pub attrs: Vec<(String, String)>,
-    pub text: Option<std::sync::Arc<str>>,
-    pub children: Vec<XfaProp>,
-}
-
-/// A template object's own attributes and its property elements.
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct XfaProps {
-    pub attrs: Vec<(String, String)>,
-    pub elements: Vec<XfaProp>,
-}
 
 /// Deepest property path a script may name below an object (`ui > textEdit > border > edge >
 /// color` is 5); deeper reads get an object that takes anything and holds nothing.

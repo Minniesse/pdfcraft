@@ -6834,6 +6834,7 @@ fn form_formats_and_calculations_through_tools() {
 
 /// Renaming a field renames it in the formulas that read it: a sum dropped the field, notation
 /// read it as 0 and a script kept a stale value.
+#[cfg(feature = "js")]
 #[test]
 fn renaming_a_field_keeps_the_formulas_that_read_it() {
     let dir = workdir("formrename");
@@ -6888,6 +6889,7 @@ fn renaming_a_field_keeps_the_formulas_that_read_it() {
 
 /// The calculation order through the tool: read with what each formula reads and what is wrong,
 /// fixed so stale values come out right, moved, set, and undone.
+#[cfg(feature = "js")]
 #[test]
 fn the_calculation_order_is_read_fixed_and_set() {
     let dir = workdir("calcorder");
@@ -6987,6 +6989,7 @@ fn the_calculation_order_gives_each_field_its_own_formula() {
 /// The calculation order through the tool shows each formula, in form_set_props's shape or as a
 /// script, and flags a read of a field the form doesn't have and a script that builds the names
 /// it reads; form_fields shows a custom script too.
+#[cfg(feature = "js")]
 #[test]
 fn the_calculation_order_shows_formulas_and_what_they_cannot_read() {
     let dir = workdir("calcformulas");
@@ -8319,6 +8322,7 @@ fn signing_with_an_image_typed_or_drawn_graphic_through_tools() {
 /// when asked (run_form_scripts): preSign first, so what it changes is signed, listed field by field,
 /// and postSign after, left as unsaved changes; the result carries their messages. Not asked, they
 /// don't run and the result says the box has them; a box without them reports nothing.
+#[cfg(feature = "js")]
 #[test]
 fn signing_an_xfa_box_runs_its_signing_scripts_through_tools() {
     let dir = workdir("xfa-sign-events");
@@ -9624,6 +9628,7 @@ fn ocr_recognize_files_with_distinct_names_runs_as_before() {
 
 /// Field scripts set through the tools validate, calculate and format, and `js_run` reports console
 /// lines, every message with its details, and requests.
+#[cfg(feature = "js")]
 #[test]
 fn javascript_through_tools() {
     let dir = workdir("js");
@@ -9737,6 +9742,7 @@ fn merging_form_data_into_a_spreadsheet() {
     assert_eq!(std::fs::read_to_string(dir.join("report.csv")).unwrap(), "City\nParis\nOslo\nOslo\n");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn field_actions_through_tools() {
     let dir = workdir("field-actions");
@@ -10448,6 +10454,7 @@ fn exporting_to_word_keeps_a_bulleted_list_as_paragraphs() {
 /// Hundreds of calculations run on opening and again after a change through the tools. The
 /// time limits are raised so that a busy machine does not stop them (the engine's tests check
 /// that the limits stop them).
+#[cfg(feature = "js")]
 #[test]
 fn hundreds_of_xfa_calculations_open_and_recalculate_through_tools() {
     let dir = workdir("xfa-many");
@@ -10921,6 +10928,7 @@ fn measurement_snap_tool_covers_all_targets() {
 
 /// An XFA button click through js_run returns only what the click produced, not the
 /// alerts of an earlier fill.
+#[cfg(feature = "js")]
 #[test]
 fn an_xfa_click_through_js_run_does_not_return_an_earlier_fills_alerts() {
     let dir = workdir("xfa-click-output");
@@ -10936,6 +10944,7 @@ fn an_xfa_click_through_js_run_does_not_return_an_earlier_fills_alerts() {
 
 /// form_set_script returns only the console lines its own edit produced, not those of an
 /// earlier fill.
+#[cfg(feature = "js")]
 #[test]
 fn form_set_script_does_not_return_an_earlier_fills_console_lines() {
     let dir = workdir("set-script-output");
@@ -10955,6 +10964,7 @@ fn form_set_script_does_not_return_an_earlier_fills_console_lines() {
 
 /// js_run returns the output of the field scripts that its field changes ran, with the
 /// script's own.
+#[cfg(feature = "js")]
 #[test]
 fn js_run_returns_the_output_of_the_calculations_its_changes_ran() {
     let dir = workdir("js-run-calc-output");
@@ -10976,6 +10986,7 @@ fn js_run_returns_the_output_of_the_calculations_its_changes_ran() {
 /// The tools that edit a document without going through form_fill's path report the values of
 /// an XFA form that could not be written to its data in `warnings`, once, and leave nothing for
 /// the next tool to report as its own.
+#[cfg(feature = "js")]
 #[test]
 fn edits_report_the_xfa_data_they_could_not_write_once() {
     let dir = workdir("xfa-data-warnings");
@@ -11042,6 +11053,7 @@ fn growable_xfa_text_paginates_after_fill_save_and_print() {
 
 /// A print button repeated on every page of an XFA form runs its own XFA click script (a print
 /// request) through js_run, from each copy, before and after saving and reopening.
+#[cfg(feature = "js")]
 #[test]
 fn repeated_xfa_print_buttons_work_through_tools_and_after_reopen() {
     let dir = workdir("xfa-print-buttons");
@@ -11072,6 +11084,7 @@ fn repeated_xfa_print_buttons_work_through_tools_and_after_reopen() {
 /// form_focus runs a field's XFA enter and exit scripts on every focus change; scripts that
 /// change nothing leave no edit, a radio button's own scripts run for its widget, and unknown
 /// fields, widgets and events are refused.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_focus_scripts_run_through_form_focus() {
     let dir = workdir("xfa-focus");
@@ -11158,6 +11171,7 @@ fn form_focus_refuses_a_field_with_no_widget() {
 
 /// A dynamic XFA form's scripts run on open, on fills and for buttons through the tools, with undo,
 /// and `js_run` reports their messages.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_scripts_run_for_buttons_and_field_changes_through_tools() {
     let dir = workdir("xfa-scripts");
@@ -11189,6 +11203,7 @@ fn xfa_scripts_run_for_buttons_and_field_changes_through_tools() {
     assert_eq!(r["alerts"], json!([{ "message": "Hello 4", "title": null, "icon": "error", "buttons": "ok" }]));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn active_xfa_skips_container_fallback_scripts_after_save_and_reopen() {
     let dir = workdir("xfa-container-scripts");
@@ -11218,6 +11233,7 @@ fn active_xfa_skips_container_fallback_scripts_after_save_and_reopen() {
     let _ = std::fs::remove_dir_all(dir);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn doc_info_says_when_a_runaway_script_turned_the_forms_scripts_off() {
     let dir = workdir("xfa-scripts-off");

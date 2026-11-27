@@ -1,5 +1,7 @@
 //! Form date fields name months in the app's date language (#5303). Its own test binary: the
-//! names are process-wide, so other tests must not see them change, and its tests take turns.
+//! names are process-wide, so other tests must not see them change, and its tests take turns. They
+//! run the script engine, so they need the `js` feature.
+#![cfg(feature = "js")]
 
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 

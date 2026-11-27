@@ -151,6 +151,8 @@ fn cases() -> Vec<Case> {
             edit: |h| type_into(h, "Pattern", "dd.mm.yyyy"),
             applied: |a| a.session.date_format() == "dd.mm.yyyy",
         },
+        // The JavaScript page needs the script engine (the `js` feature).
+        #[cfg(feature = "js")]
         Case { name: "javascript", page: "JavaScript", edit: |h| click(h, "Enable Acrobat JavaScript"), applied: |a| !a.session.javascript() },
     ]
 }

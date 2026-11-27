@@ -6,6 +6,11 @@ edition.workspace = true
 license.workspace = true
 publish = false
 
+[features]
+default = ["js"]
+# Document, field and XFA scripts (see pdfcraft-engine). The KatWork build turns it off.
+js = ["pdfcraft-ui-egui/js"]
+
 [lints]
 workspace = true
 

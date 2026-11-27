@@ -193,7 +193,7 @@ The [PDF workflow research reference](research/pdf-workflows/README.md) collects
 The alpha gate: Acrobat Pro's everyday core workflows must each work end to end on the
 main platform (macOS), with the work saved and reopened. Any `no`, or a `partial` that blocks the
 workflow, keeps PdfCraft pre-alpha; those rows are the alpha checklist. Assessed 2026-10-10 with the
-rule applied across the Crafting Apps: a row blocks only when a typical user cannot complete the
+rule applied across the Craft apps: a row blocks only when a typical user cannot complete the
 workflow at all with the app on its main platform for typical inputs; degraded fidelity, lossy
 exchange with Acrobat users or a missing sub-case is `partial, not blocking` (a beta item).
 

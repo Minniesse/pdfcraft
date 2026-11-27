@@ -138,9 +138,13 @@ impl Session {
 
     /// [`Session::apply`], giving back what an [`Edit::PrepareText`] did (`None` for other edits).
     fn apply_reporting(&mut self, id: DocId, edit: Edit) -> Result<Option<pdfcraft_edit::text::forms::Preparation>, EditError> {
+        // Without a script engine a script is never stored, so none waits for a build that has one.
+        if !cfg!(feature = "js") && sets_a_script(&edit) {
+            return Err(EditError::Invalid(crate::js::NOT_AVAILABLE.into()));
+        }
         let now = self.now();
         let today = self.today();
-        let js_off = self.js_off;
+        let js_off = self.js_off();
         let highlight = self.field_highlight;
         let xfa_time_scale = self.xfa_time_scale.unwrap_or(1);
         let doc = self.doc_mut(id)?;
@@ -814,4 +818,13 @@ fn edit_notices(edit: &Edit, prev: &pdfcraft_cos::Document, next: &pdfcraft_cos:
         }
     }
     notices
+}
+
+/// Whether `edit` (or an edit of its batch) sets a document or field script.
+fn sets_a_script(edit: &Edit) -> bool {
+    match edit {
+        Edit::SetDocumentScript { .. } | Edit::SetFieldScript { .. } => true,
+        Edit::Batch { edits, .. } => edits.iter().any(sets_a_script),
+        _ => false,
+    }
 }

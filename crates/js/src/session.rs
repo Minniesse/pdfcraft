@@ -1,26 +1,13 @@
 //! One sandboxed realm per open document. No context crosses a document boundary.
 #[cfg(not(target_arch = "wasm32"))]
 use crate::interaction::InteractiveEvent;
-use crate::{DocInfo, Event, FieldState, Limits, Outcome};
+use crate::{Event, FieldState, Limits, Outcome};
 use std::sync::Arc;
 #[cfg(not(target_arch = "wasm32"))]
 use std::sync::mpsc;
 
-/// One event snapshot; the worker owns its context and refreshes this data between invocations.
-#[derive(Clone)]
-pub struct Job {
-    pub script: String,
-    pub event: Event,
-    pub doc: DocInfo,
-    pub fields: Arc<Vec<FieldState>>,
-    pub doc_scripts: Vec<String>,
-    /// Target positions in this job's field snapshot and their ordered script sources.
-    pub calculations: Vec<(usize, String)>,
-    /// Fire this timer of the realm (`app.setInterval`, `app.setTimeOut`) in place of `script`
-    /// (#169). A timer the realm no longer has runs nothing; nor does any timer of a realm that
-    /// has not started, or whose document scripts changed (its timers went with it).
-    pub timer: Option<u32>,
-}
+pub use crate::model::Job;
+
 /// Live field instances are independent of restorable PDF object-number allocation.
 #[derive(Default)]
 struct FieldInstances {
@@ -651,6 +638,7 @@ impl ScriptSession {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::DocInfo;
     /// Create a small button-event job with document globals used by persistent-session regressions.
     fn job(source: &str) -> Job {
         Job {
@@ -1224,7 +1212,7 @@ mod cache_lifecycle_tests {
 #[cfg(test)]
 mod review13_tests {
     use super::*;
-    use crate::FieldType;
+    use crate::{DocInfo, FieldType};
     /// Build isolated jobs without document initialization side effects.
     fn job(script: &str, fields: Vec<FieldState>) -> Job {
         Job {

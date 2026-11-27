@@ -1,31 +1,18 @@
 //! Help ▸ About: the framework's hosted About dialog over the app's info and the baked credits.
 
 use craft::behavior::IconId;
-use craft::ui::patterns::form_dialogs::{AboutImage, AboutInfo, AboutLink, AboutTab, HostedAbout};
+use craft::ui::patterns::form_dialogs::{AboutInfo, AboutLink, AboutTab, HostedAbout};
 
 use crate::PdfCraftApp;
 
-/// The ArtCraft mark, unmodified (AGENTS.md §1.2); the framework draws it through its SVG picture.
-const MARK: &[u8] = include_bytes!("../../../../docs/brand/artcraft-mark.svg");
-/// The ArtCraft wordmark for a light theme.
-const LOGO: &[u8] = include_bytes!("../../../../docs/brand/artcraft-logo.svg");
-/// The ArtCraft wordmark for a dark theme, which the light one would not read on.
-const LOGO_WHITE: &[u8] = include_bytes!("../../../../docs/brand/artcraft-logo-white.svg");
-
-/// What the About tab shows: PdfCraft's name, blurb and version, the ArtCraft brand, and the community links.
+/// What the About tab shows: PdfCraft's name, blurb and version, where this build comes from, and its links.
+/// The app's name is plain text in the title; no mark is drawn.
 fn info() -> AboutInfo {
-    let info = AboutInfo::new(
-        "PdfCraft",
-        tl!("A clean-room, open-source PDF application written in Rust. MIT OR Apache-2.0."),
-        pdfcraft_engine::build_info::version(),
-    )
-    .mark(AboutImage::svg("ArtCraft", MARK))
-    .part_of(AboutImage::svg("ArtCraft", LOGO).dark(LOGO_WHITE))
-    .built_with("Rendering: hayro (bootstrap) · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono, Dancing Script (OFL)");
-    info.links(pdfcraft_engine::links::LINKS.iter().enumerate().map(|(i, l)| {
-        let label = if i == 0 { tl!("Join our Discord") } else { tl!(l.label) };
-        AboutLink::new(label.to_string(), l.url).icon(IconId::new(l.icon))
-    }))
+    let blurb =
+        format!("{}\n{}", tl!("A clean-room, open-source PDF application written in Rust. MIT OR Apache-2.0."), pdfcraft_engine::links::BASED_ON);
+    let info = AboutInfo::new("PdfCraft", blurb, pdfcraft_engine::build_info::version())
+        .built_with("Rendering: hayro (bootstrap) · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono, Dancing Script (OFL)");
+    info.links(pdfcraft_engine::links::LINKS.iter().map(|l| AboutLink::new(tl!(l.label).to_string(), l.url).icon(IconId::new(l.icon))))
 }
 
 impl PdfCraftApp {
@@ -46,7 +33,16 @@ impl PdfCraftApp {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn about_community_links_keep_their_icons_and_destinations() {
+    fn about_shows_the_app_name_as_plain_text_and_where_the_build_comes_from() {
+        let info = super::info();
+        assert_eq!(info.app_name.as_str(), "PdfCraft");
+        assert!(info.mark.is_none() && info.part_of.is_none() && info.community.is_none(), "no mark, logo or community button");
+        assert!(info.blurb.as_str().contains(pdfcraft_engine::links::BASED_ON), "{}", info.blurb.as_str());
+        assert!(info.links.iter().all(|l| l.url.starts_with(pdfcraft_engine::links::GITHUB)), "every link goes to the upstream repository");
+    }
+
+    #[test]
+    fn about_links_keep_their_icons_and_destinations() {
         let info = super::info();
         assert_eq!(info.links.len(), pdfcraft_engine::links::LINKS.len());
         for (shown, expected) in info.links.iter().zip(pdfcraft_engine::links::LINKS) {

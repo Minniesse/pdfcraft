@@ -92,9 +92,11 @@ pdfcraft-create = { path = "crates/create", version = "0.22.0" }
 pdfcraft-forms = { path = "crates/forms", version = "0.22.0" }
 pdfcraft-xfa = { path = "crates/xfa", version = "0.22.0" }
 pdfcraft-render = { path = "crates/render", version = "0.22.0" }
-pdfcraft-engine = { path = "crates/engine", version = "0.22.0" }
+# The engine and the UI carry the `js` feature (on by default); members inherit them with their
+# defaults off and forward `js` explicitly, so `--no-default-features` leaves the script engine out.
+pdfcraft-engine = { path = "crates/engine", version = "0.22.0", default-features = false }
 pdfcraft-platform = { path = "crates/platform", version = "0.22.0" }
-pdfcraft-ui-egui = { path = "crates/ui-egui", version = "0.22.0" }
+pdfcraft-ui-egui = { path = "crates/ui-egui", version = "0.22.0", default-features = false }
 pdfcraft-automation = { path = "crates/automation", version = "0.22.0", default-features = false }
 pdfcraft-prc = { package = "craft-prc", git = "https://github.com/storytold/craft-libs", version = "0.1.0", rev = "0a6e42b80bfd586aee6ee1144aa98cf1ea37a844" }
 craft-prc = { git = "https://github.com/storytold/craft-libs", version = "0.1.0", rev = "0a6e42b80bfd586aee6ee1144aa98cf1ea37a844" }

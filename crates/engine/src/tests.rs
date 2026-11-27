@@ -3652,6 +3652,7 @@ fn preparing_a_form_adds_renames_and_deletes_fields() {
 /// Setting the calculation order is one undoable edit that recalculates: values that ran too
 /// early come out right at once, a script calculation included, and undo brings back the old
 /// order and values together.
+#[cfg(feature = "js")]
 #[test]
 fn setting_the_calculation_order_recalculates_and_undoes() {
     use form_scripts::{CalcOp, Calculate};
@@ -3692,6 +3693,7 @@ fn setting_the_calculation_order_recalculates_and_undoes() {
 
 /// A Calculate script that sets its own field through the field object, not `event.value`,
 /// gives the field that value, text included; when it sets `event.value` as well, that wins.
+#[cfg(feature = "js")]
 #[test]
 fn a_calculate_script_setting_its_own_field_object_keeps_the_value() {
     let (mut s, id) = session_with(1);
@@ -3714,6 +3716,7 @@ fn a_calculate_script_setting_its_own_field_object_keeps_the_value() {
 /// A Calculate script that assigns `event.value` the value its field already holds keeps it, even
 /// after writing another value through its field object; and a combo box a script moves to
 /// another option selects that option in `/I` too.
+#[cfg(feature = "js")]
 #[test]
 fn a_calculate_script_assigning_event_value_wins_and_a_combo_keeps_its_selection() {
     let (mut s, id) = session_with(1);
@@ -7036,6 +7039,7 @@ fn scripted_form_with(helpers: &str) -> Vec<u8> {
 
 /// AcroForm field scripts validate, calculate and format through edits, and a button script's
 /// changes, messages and requests come back.
+#[cfg(feature = "js")]
 #[test]
 fn form_javascript_validates_calculates_and_formats() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -7104,6 +7108,7 @@ fn form_javascript_validates_calculates_and_formats() {
     assert!(s.run_javascript(id, "1", None).is_err());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn javascript_field_colours_persist_and_undo_without_changing_other_appearance_properties() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -7153,6 +7158,7 @@ fn javascript_field_colours_persist_and_undo_without_changing_other_appearance_p
     assert_eq!(pdfcraft_forms::look(&reopened_doc, &f).text, [0.0, 0.0, 1.0]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn javascript_invalid_field_colour_array_is_refused_without_partial_changes() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -7163,6 +7169,7 @@ fn javascript_invalid_field_colour_array_is_refused_without_partial_changes() {
     assert_eq!(s.save_bytes(id).unwrap(), before, "a refused script changes nothing");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn javascript_field_colours_respect_document_fill_permissions() {
     let mut plain = pdfcraft_cos::Document::open(Arc::new(scripted_form())).unwrap();
@@ -7187,6 +7194,7 @@ fn javascript_field_colours_respect_document_fill_permissions() {
     assert!(!s.get(id).unwrap().dirty);
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// Synchronous calculation exposes pending values immediately and persists the invocation as one undo transaction.
 fn calculate_now_updates_live_fields_in_one_undo_step() {
@@ -7219,6 +7227,7 @@ fn calculate_now_updates_live_fields_in_one_undo_step() {
     assert_eq!(s.get(reopened).unwrap().form.iter().find(|f| f.name == "total").unwrap().value, ["6"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculate_now_in_a_document_script_helper_gets_the_calculation_list() {
     let helpers = "function times\\(a, b\\) { return a * b; } function recalc\\(\\) { calculateNow\\(\\); }";
@@ -7232,6 +7241,7 @@ fn calculate_now_in_a_document_script_helper_gets_the_calculation_list() {
     assert!(out.console.iter().any(|line| line == "6"), "the document helper recalculated total: {out:?}");
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// Respect explicit calculation order, restore the outer event and stop recursive calculation requests.
 fn calculate_now_uses_calculation_order_and_bounds_recursion() {
@@ -7281,6 +7291,7 @@ fn calculate_now_uses_calculation_order_and_bounds_recursion() {
     assert!(s.run_javascript(id, "1 + 1", None).unwrap().error.is_none());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculation_order_cache_tracks_script_edits_in_a_batch() {
     let mut session = Session::new().with_clock(|| 1_700_000_000);
@@ -7311,6 +7322,7 @@ fn calculation_order_cache_tracks_script_edits_in_a_batch() {
     assert_eq!(total, ["8"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculation_order_cache_tracks_field_property_edits_in_a_batch() {
     use form_scripts::{CalcOp, Calculate};
@@ -7348,6 +7360,7 @@ fn calculation_order_cache_tracks_field_property_edits_in_a_batch() {
     assert!(output.console.iter().any(|line| line == "4"), "calculateNow observed the refreshed Sum: {output:?}");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculation_order_cache_refreshes_after_inserting_pages() {
     use pdfcraft_forms::{FieldEvent, Scripts};
@@ -7394,6 +7407,7 @@ fn calculation_order_cache_refreshes_after_inserting_pages() {
     assert!(js.output.console.iter().any(|line| line == "inserted field calculated"), "{:#?}", js.output);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn javascript_field_rect_moves_first_widget_and_undoes() {
     let mut s = Session::new();
@@ -7410,6 +7424,7 @@ fn javascript_field_rect_moves_first_widget_and_undoes() {
 
 /// XFA forms check `xfa_installed` and `xfa_version` in a document script that runs before
 /// each of their scripts, and alert when either is missing.
+#[cfg(feature = "js")]
 #[test]
 fn scripts_in_an_xfa_form_see_the_xfa_plugin_installed() {
     let check = "typeof xfa_installed + ' ' + typeof xfa_version + ' ' + xfa_version";
@@ -7425,6 +7440,7 @@ fn scripts_in_an_xfa_form_see_the_xfa_plugin_installed() {
 /// #3940: a document-level script that defines the helper and then calls a method PdfCraft lacks
 /// (an Acrobat form copying a button icon at open) left every calculated field blank. The
 /// helper stays defined, the form calculates, and the error is reported once.
+#[cfg(feature = "js")]
 #[test]
 fn a_document_script_that_throws_still_lets_the_form_calculate() {
     let helpers = "function times\\(a, b\\) { return a * b; } this.getField\\('go'\\).missingTestMethod\\(\\);";
@@ -7443,6 +7459,7 @@ fn a_document_script_that_throws_still_lets_the_form_calculate() {
 }
 
 /// A looping initializer is reported once and later initializers and field events still run.
+#[cfg(feature = "js")]
 #[test]
 fn a_document_script_at_the_vm_limit_does_not_block_field_edits() {
     let mut cos = pdfcraft_cos::Document::open(Arc::new(scripted_form_with(r"while \(true\) {}"))).unwrap();
@@ -7462,6 +7479,7 @@ fn a_document_script_at_the_vm_limit_does_not_block_field_edits() {
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn active_xfa_does_not_run_pdf_container_scripts_but_keeps_requested_alerts() {
     let template = pdfcraft_xfa::fixtures::scripted_template().replace(
@@ -7500,6 +7518,7 @@ fn active_xfa_does_not_run_pdf_container_scripts_but_keeps_requested_alerts() {
     assert!(s.run_javascript(id, "", None).unwrap().alerts.is_empty());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn active_xfa_without_template_scripts_does_not_initialize_pdf_fallback_scripts() {
     let template = r#"<template xmlns="http://www.xfa.org/schema/xfa-template/3.3/">
@@ -7516,6 +7535,7 @@ fn active_xfa_without_template_scripts_does_not_initialize_pdf_fallback_scripts(
     assert_eq!(out.alerts, [js::Message::plain("Console message")]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn inactive_xfa_and_ordinary_pdfs_keep_document_helpers_and_alerts() {
     for bytes in [
@@ -7534,6 +7554,7 @@ fn inactive_xfa_and_ordinary_pdfs_keep_document_helpers_and_alerts() {
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// Read inherited page boxes without dirtying the document and reject invalid box/page requests.
 fn js_get_page_box_reads_effective_boxes_without_editing_the_document() {
@@ -7552,6 +7573,7 @@ fn js_get_page_box_reads_effective_boxes_without_editing_the_document() {
     assert_eq!(s.get(id).expect("document remains open").can_undo(), before.as_deref());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn automatic_field_scripts_cannot_print() {
     use pdfcraft_forms::{FieldEvent, Scripts};
@@ -7585,6 +7607,7 @@ fn automatic_field_scripts_cannot_print() {
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn automatic_print_suppression_preserves_document_errors() {
     use pdfcraft_forms::{FieldEvent, Scripts};
@@ -7605,6 +7628,7 @@ fn automatic_print_suppression_preserves_document_errors() {
     assert_eq!(out.errors.iter().filter(|e| e.contains("field failure")).count(), 4, "each field script's error is retained: {out:?}");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn form_calculations_cannot_print_but_buttons_and_console_can() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -7637,6 +7661,7 @@ fn form_calculations_cannot_print_but_buttons_and_console_can() {
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn edit_history_does_not_replay_field_script_side_effects() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -7990,6 +8015,7 @@ fn actions_run_their_steps_on_files() {
 /// step runs and writes the field; with it off, the step does not run, so `run_on` reports the
 /// refused script's error instead of saving a script-produced value. Before the fix each file
 /// opened in a fresh JavaScript-on session, so the step ran whatever the caller chose.
+#[cfg(feature = "js")]
 #[test]
 fn an_action_runs_a_javascript_step_only_when_javascript_is_on() {
     let action = actions::Action {
@@ -8218,6 +8244,7 @@ fn field_text(s: &Session, id: DocId, name: &str) -> String {
 
 /// A field's exit scripts run every time it loses focus, changed or not, and its enter scripts
 /// every time it gains it; each run that changes the form is one undo step.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_enter_and_exit_scripts_run_on_every_focus_change() {
     use crate::js::FieldFocus::{Enter, Exit};
@@ -8235,6 +8262,7 @@ fn xfa_enter_and_exit_scripts_run_on_every_focus_change() {
 
 /// A value typed into a field runs its exit with the change; losing focus then doesn't run it
 /// again. The next visit runs it as usual.
+#[cfg(feature = "js")]
 #[test]
 fn an_exit_the_fields_change_ran_does_not_run_twice() {
     use crate::js::FieldFocus::{Enter, Exit};
@@ -8252,6 +8280,7 @@ fn an_exit_the_fields_change_ran_does_not_run_twice() {
 
 /// The skip lasts only until the next edit, undo or redo: a change that is undone, or followed by
 /// another edit, doesn't make a later focus loss skip the field's exit.
+#[cfg(feature = "js")]
 #[test]
 fn an_exit_skip_does_not_outlive_its_change() {
     use crate::js::FieldFocus::{Enter, Exit};
@@ -8323,6 +8352,7 @@ fn on_changes_notes_only_the_exits_that_ran() {
 
 /// Scripts that change nothing leave no edit: the document stays saved, with nothing to undo,
 /// and what they showed still reaches the viewer. A field without such scripts runs nothing.
+#[cfg(feature = "js")]
 #[test]
 fn focus_scripts_that_change_nothing_leave_the_document_clean() {
     use crate::js::FieldFocus::{Enter, Exit};
@@ -8357,6 +8387,7 @@ fn a_widget_the_field_doesnt_have_runs_no_focus_scripts() {
 /// enter script, reaching the first (which has none) runs nothing. Choosing the button changes
 /// the group's value, which runs the group's scripts, not the button's: leaving the button
 /// still runs its exit.
+#[cfg(feature = "js")]
 #[test]
 fn a_radio_buttons_own_focus_scripts_run() {
     use crate::js::FieldFocus::{Enter, Exit};
@@ -8492,6 +8523,7 @@ fn dynamic_xfa_forms_are_laid_out_on_open_filled_and_saved_incrementally() {
 /// A signature box's XFA preSign script runs as one undoable step, showing its notice and
 /// changing the form; its postSign script runs too; a box without them runs nothing and changes
 /// nothing.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_signing_scripts_run_before_and_after_signing() {
     use crate::js::SignEvent;
@@ -8944,6 +8976,7 @@ fn xfa_data_no_field_binds_to_survives_an_edit_and_save() {
 
 /// An XFA form's choice lists, signature and picture fields open as their kinds of field, take
 /// values that scripts read, and are saved into the datasets.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_choice_lists_signature_and_picture_fields_open_fill_script_and_save() {
     let data = "<form><page1><country>Japan</country><langs>English\nSpanish</langs></page1></form>";
@@ -9009,6 +9042,7 @@ fn xfa_choice_lists_signature_and_picture_fields_open_fill_script_and_save() {
 
 /// A form's data exports, imports and takes pictures through the session, and what it holds
 /// comes back the same.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_data_exports_imports_and_pictures_round_trip_through_the_session() {
     use pdfcraft_xfa::som_to_path;
@@ -9119,6 +9153,7 @@ fn xfa_data_import_on_a_static_form_replaces_every_value_and_pictures_reach_its_
 
 /// Importing data into a dynamic form adds and removes the rows of its repeating subform to
 /// match, and the calculations over them run again.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_data_import_adds_and_removes_rows_of_a_dynamic_form() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
@@ -9155,6 +9190,7 @@ fn xfa_data_import_adds_and_removes_rows_of_a_dynamic_form() {
 /// Hundreds of calculations, in JavaScript and FormCalc, run on opening in one engine, and a
 /// change recalculates them in one more. The time limits are raised so that a busy machine
 /// does not stop them; the next test checks that the limits stop them.
+#[cfg(feature = "js")]
 #[test]
 fn hundreds_of_xfa_calculations_run_in_one_engine() {
     let (sections, rows) = (10, 20);
@@ -9190,6 +9226,7 @@ fn hundreds_of_xfa_calculations_run_in_one_engine() {
 
 /// The time the scripts of an opening share stops the calculations it has no time for, and
 /// says how many were skipped; a change's scripts are stopped the same way.
+#[cfg(feature = "js")]
 #[test]
 fn the_xfa_open_budget_stops_the_calculations_it_has_no_time_for() {
     let (sections, rows) = (10, 20);
@@ -9216,6 +9253,7 @@ fn the_xfa_open_budget_stops_the_calculations_it_has_no_time_for() {
 /// time on the first few, and a form whose initialize scripts hide its optional pages was
 /// saved half initialized: the next opening hid more of it, and reset the data typed into
 /// what it hid.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_initialize_scripts_that_hide_subforms_lay_the_form_out_once() {
     // Shaped like a form with optional extra pages: a check box, then more sections than one
@@ -9271,6 +9309,7 @@ fn xfa_initialize_scripts_that_hide_subforms_lay_the_form_out_once() {
 /// A script that resets several subforms one after another (`xfa.host.resetData` once for
 /// each, as forms with optional pages do) resets every one of them, and nothing else; resets
 /// in a row are applied together.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_resets_in_a_row_reset_every_named_subform_and_nothing_else() {
     let sections = 5;
@@ -9326,6 +9365,7 @@ fn xfa_resets_in_a_row_reset_every_named_subform_and_nothing_else() {
 /// The scripts of one event share the form as the engine holds it: a failed script's
 /// half-done writes reach nobody, and a script reads the saved value a choice list was given
 /// by its shown text.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_scripts_of_one_event_see_the_form_as_the_engine_holds_it() {
     // In document order: `a` holds 1; `b`'s calculate writes `a` then fails; `c`'s calculate
@@ -9356,6 +9396,7 @@ fn xfa_scripts_of_one_event_see_the_form_as_the_engine_holds_it() {
 
 /// A row of dates worked out the way leave forms do it: the calculation checks that the raw value
 /// is a whole ISO date, then adds days to the date as `formattedValue` shows it (`YYYYMMDD`).
+#[cfg(feature = "js")]
 #[test]
 fn xfa_date_arithmetic_reads_the_date_as_its_display_picture_shows_it() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::date_row_template()));
@@ -9461,6 +9502,7 @@ fn xfa_structured_data_whitespace_edits_survive_without_stale_relayout() {
 /// A script that fails partway keeps what it did before the error, as JavaScript does: a form
 /// whose check box opens the next boxes and then trips over an object the form no longer has
 /// still opens them (DA Form 31's leave types).
+#[cfg(feature = "js")]
 #[test]
 fn an_xfa_script_that_fails_partway_keeps_what_it_changed_before_the_error() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::partly_failing_script_template()));
@@ -9495,6 +9537,7 @@ fn xfa_forms_tab_in_their_templates_traversal_order() {
 /// A scripted form end to end: initialize and calculate on open, recalculation after a change,
 /// a failing validation's message, buttons that add and remove rows and show messages, a check
 /// box that shows a subform (undoable), FormCalc, and a save and reopen that keep it all.
+#[cfg(feature = "js")]
 #[test]
 fn repeated_xfa_print_buttons_run_their_click_script() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::repeated_print_button_template()));
@@ -9510,6 +9553,7 @@ fn repeated_xfa_print_buttons_run_their_click_script() {
 
 /// A button on the page master runs its click script as the copy on the page that was clicked:
 /// the field it writes next to it changes on that page only.
+#[cfg(feature = "js")]
 #[test]
 fn a_page_master_button_writes_the_field_on_its_own_page() {
     let template = pdfcraft_xfa::fixtures::repeated_print_button_template().replace(
@@ -9536,6 +9580,7 @@ fn a_page_master_button_writes_the_field_on_its_own_page() {
 /// An initialize script that hides the last page's subform takes a page away; the page-master
 /// button of that page, listed to initialize before it went, doesn't run with `this` at the
 /// form instead and hide all of it.
+#[cfg(feature = "js")]
 #[test]
 fn a_page_master_script_of_a_page_gone_does_not_hide_the_form() {
     let template = pdfcraft_xfa::fixtures::repeated_print_button_template()
@@ -9561,6 +9606,7 @@ fn a_page_master_script_of_a_page_gone_does_not_hide_the_form() {
 
 /// An XFA form's scripts initialize, calculate, validate, show subforms and add and remove rows,
 /// with undo and save/reopen.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_scripts_initialize_calculate_validate_toggle_and_add_rows() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
@@ -9629,6 +9675,7 @@ fn xfa_scripts_initialize_calculate_validate_toggle_and_add_rows() {
 
 /// An XFA button's click returns only what the click produced. The alerts and errors of the
 /// scripts that ran on open stay in the document's output.
+#[cfg(feature = "js")]
 #[test]
 fn an_xfa_click_returns_only_its_own_script_output() {
     let template = pdfcraft_xfa::fixtures::scripted_template()
@@ -9654,6 +9701,7 @@ fn an_xfa_click_returns_only_its_own_script_output() {
 /// row is laid out, the values Adobe wrote (under the area's parent: areas are
 /// not data scopes) are read, a FormCalc total over all rows computes, and what is filled here
 /// is written back where Adobe's viewers read it, with no element for the area.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_rows_in_areas_are_laid_out_read_calculated_and_written_where_adobe_binds_them() {
     let data = "<form><page><table><row><reason>Regular</reason><days>4</days></row><row><reason/><days/></row><row><reason/><days/></row></table><carried>5</carried></page></form>";
@@ -9690,6 +9738,7 @@ fn xfa_rows_in_areas_are_laid_out_read_calculated_and_written_where_adobe_binds_
     assert_eq!((v2("days_2"), v2("rest")), ("2".into(), "29".into()));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_value_a_script_sets_reaches_every_field_bound_to_the_same_data_node() {
     // `carried` inside the area and a second `carried` outside it bind to one data node (areas
@@ -9752,6 +9801,7 @@ fn a_value_a_script_sets_reaches_every_field_bound_to_the_same_data_node() {
     );
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn flattening_an_xfa_form_bakes_its_pages_and_takes_the_xfa_out() {
     let data = "<form><page1><country>JP</country><langs>English\nSpanish</langs></page1></form>";
@@ -9787,6 +9837,7 @@ fn flattening_an_xfa_form_bakes_its_pages_and_takes_the_xfa_out() {
     assert_eq!(s.get(id).unwrap().info.xfa, Some(pdfcraft_render::Xfa::Dynamic));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_dynamic_xfa_form_that_was_never_laid_out_keeps_its_xfa_and_the_user_is_told_what_went() {
     // A template that can't be read: the form keeps its placeholder page and its XFA.
@@ -9820,6 +9871,7 @@ fn a_dynamic_xfa_form_that_was_never_laid_out_keeps_its_xfa_and_the_user_is_told
     assert_eq!(s.get(id).unwrap().info.xfa, Some(pdfcraft_render::Xfa::Dynamic));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn an_xfa_form_converts_to_a_static_form_that_keeps_its_fields() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::scripted_template()));
@@ -9860,6 +9912,7 @@ fn an_xfa_form_converts_to_a_static_form_that_keeps_its_fields() {
 }
 
 /// A dynamic XFA form scripted in FormCalc runs as the JavaScript one does.
+#[cfg(feature = "js")]
 #[test]
 fn dynamic_xfa_forms_run_formcalc_scripts() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::formcalc_template()));
@@ -9903,6 +9956,7 @@ fn dynamic_xfa_forms_run_formcalc_scripts() {
     assert!(d2.form.iter().any(|f| f.name == "note"));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn hostile_formcalc_scripts_cannot_hang_or_bloat_the_document() {
     let tpl = pdfcraft_xfa::fixtures::formcalc_template()
@@ -9930,6 +9984,7 @@ f(1)</script>",
     assert!(started.elapsed() < std::time::Duration::from_secs(60), "{:?}", started.elapsed());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_formcalc_calculate_result_is_cut_before_it_is_saved() {
     let tpl = pdfcraft_xfa::fixtures::formcalc_template()
@@ -9958,6 +10013,7 @@ fn xfa_scripts_stay_off_with_javascript_off() {
     assert!(!s.get(id).unwrap().xfa_scripts_off(), "the preference, not a script that ran away");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn hostile_xfa_scripts_cannot_hang_or_bloat_the_document() {
     // A calculate script that adds a row every time it runs, a click script that loops on
@@ -9982,6 +10038,7 @@ fn hostile_xfa_scripts_cannot_hang_or_bloat_the_document() {
     assert!(started.elapsed() < std::time::Duration::from_secs(60), "{:?}", started.elapsed());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn xfa_focus_follows_the_surviving_row_after_removal() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template().replace(
@@ -10002,6 +10059,7 @@ fn xfa_focus_follows_the_surviving_row_after_removal() {
     assert_eq!(out.requests, [pdfcraft_js::Request::FocusField { name: name.clone(), object_id: crate::js::field_object_id(*object) }], "{out:?}");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn xfa_scripts_can_remove_rows_twice_and_reset_fields_by_name() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template()
@@ -10030,6 +10088,7 @@ fn xfa_scripts_can_remove_rows_twice_and_reset_fields_by_name() {
     assert_eq!(value(&s, "price"), vec!["9".to_string()]);
 }
 
+#[cfg(feature = "js")]
 /// Streams in `bytes` (every revision) that hold an XFA datasets packet.
 fn datasets_streams(bytes: &Arc<Vec<u8>>) -> usize {
     let cos = pdfcraft_cos::Document::open(bytes.clone()).unwrap();
@@ -10046,6 +10105,7 @@ fn datasets_streams(bytes: &Arc<Vec<u8>>) -> usize {
 
 /// Hostile scripts run on open are merged, capped, kept from printing, saving and opening links,
 /// and noted.
+#[cfg(feature = "js")]
 #[test]
 fn hostile_xfa_open_scripts_are_merged_capped_kept_from_printing_and_noted() {
     // On open: a calculate setting its own value 20 000 times (50 000 sat right at the 1 s
@@ -10083,6 +10143,7 @@ fn hostile_xfa_open_scripts_are_merged_capped_kept_from_printing_and_noted() {
 /// An XFA button's message boxes reach the viewer with their titles, icons and buttons, from
 /// JavaScript (`xfa.host.messageBox`, `app.alert` in its own order) and FormCalc alike, every
 /// one of them and in order.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_message_boxes_keep_their_title_icon_and_buttons() {
     use crate::js::{Message, MessageButtons, MessageIcon};
@@ -10110,6 +10171,7 @@ fn xfa_message_boxes_keep_their_title_icon_and_buttons() {
     assert_eq!(o.alerts, vec![titled("Too many", "Limits", MessageIcon::Warning, MessageButtons::OkCancel)]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn runaway_xfa_calculations_at_open_end_quickly_with_a_report() {
     // Nested loops in one frame stop at the loop limit; loops in nested calls (that limit is per
@@ -12184,6 +12246,7 @@ fn acroform_interaction_benchmark() {
     assert_eq!(value(&s, "field3128"), ["0"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn checkbox_and_rank_changes_recalculate_ordered_dependents() {
     let mut s = Session::new();
@@ -12220,6 +12283,7 @@ fn checkbox_and_rank_changes_recalculate_ordered_dependents() {
     assert_eq!(appearance(&s), before, "unchanged calculated values keep their appearance streams");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn dynamic_calculation_reads_and_side_effects_reach_later_fields() {
     use pdfcraft_cos::{Dict, Object, PdfString};
@@ -12250,6 +12314,7 @@ fn dynamic_calculation_reads_and_side_effects_reach_later_fields() {
     assert!(s.take_js_output(id).errors.is_empty());
 }
 
+#[cfg(feature = "js")]
 #[test]
 /// Later field callbacks see current COS appearance/flags rather than the runner creation snapshot.
 fn field_scripts_read_current_appearance_during_an_edit() {
@@ -12353,6 +12418,7 @@ fn exporting_office_keeps_dotted_leader_entries_as_paragraphs() {
 
 /// `run_javascript` runs an XFA click script only for a push button, as the app does: a text
 /// field with a click event of its own, named as the target, asks to open no attached file.
+#[cfg(feature = "js")]
 #[test]
 fn run_javascript_runs_xfa_click_scripts_only_for_buttons() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12379,6 +12445,7 @@ fn run_javascript_runs_xfa_click_scripts_only_for_buttons() {
 
 /// In an XFA form a button's click script may open an attached file; the same request from a
 /// text field's exit script is noted in the console and not made.
+#[cfg(feature = "js")]
 #[test]
 fn an_xfa_button_may_open_an_attached_file_and_other_events_may_not() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12408,6 +12475,7 @@ fn an_xfa_button_may_open_an_attached_file_and_other_events_may_not() {
 
 /// A field whose layout:ready script only reads the page count keeps the value its script gives
 /// it: only a field the script gives the page call's result is numbered by the layout.
+#[cfg(feature = "js")]
 #[test]
 fn a_field_that_only_reads_the_page_count_keeps_its_scripts_value() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12429,6 +12497,7 @@ fn a_field_that_only_reads_the_page_count_keeps_its_scripts_value() {
 /// layout:ready scripts run once on opening: the root's turns field highlighting on (only when it
 /// is off), a field's sets a value and a later script reads the new highlight, while page
 /// numbering is left to the layout and form:ready is another event.
+#[cfg(feature = "js")]
 #[test]
 fn a_forms_layout_ready_scripts_run_once_it_is_laid_out() {
     let bytes = Arc::new(pdfcraft_xfa::fixtures::shell(&pdfcraft_xfa::fixtures::layout_ready_template()));
@@ -12465,6 +12534,7 @@ fn an_edits_xfa_and_field_scripts_share_the_field_highlight() {
 /// In a batch of value edits, a later field's change script reads the field highlight an earlier
 /// one's set: `on`'s change turns it on, and `look`'s, in the same batch, records what it reads.
 /// (A form-script event itself can't be batched.)
+#[cfg(feature = "js")]
 #[test]
 fn a_later_xfa_edit_in_a_batch_reads_the_highlight_an_earlier_one_set() {
     let script = |js: &str| format!(r#"<event activity="change"><script contentType="application/x-javascript">{js}</script></event>"#);
@@ -12494,6 +12564,7 @@ fn a_later_xfa_edit_in_a_batch_reads_the_highlight_an_earlier_one_set() {
 
 /// Field scripts of one edit read the field highlight an earlier one set: `on`'s calculation turns
 /// it on, and `seen`'s, which runs after it, records what it reads.
+#[cfg(feature = "js")]
 #[test]
 fn a_later_field_script_reads_the_highlight_an_earlier_one_set() {
     // Fields `input` (no script), then those named in `calculated` with their calculate scripts,
@@ -12581,6 +12652,7 @@ fn a_date_typed_by_another_of_an_xfa_fields_edit_patterns_is_kept_in_its_first()
 /// A date typed in another of an XFA date field's patterns is rewritten before any of the field's
 /// scripts run, so they run once, and a date they refuse stays refused. This validate script counts
 /// its runs in `name` and accepts on its second.
+#[cfg(feature = "js")]
 #[test]
 fn a_date_its_validate_script_refuses_is_not_tried_again() {
     let mut s = Session::new();
@@ -12600,6 +12672,7 @@ fn a_date_its_validate_script_refuses_is_not_tried_again() {
 /// initialize script gives it, the value a button's script gives it later and the value a
 /// calculation gives one, as it does the sheet number and count; the fields sit in an unnamed
 /// subform, as forms place them (#6160).
+#[cfg(feature = "js")]
 #[test]
 fn text_shows_the_values_scripts_give_its_floating_fields() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12647,6 +12720,7 @@ fn text_shows_the_values_scripts_give_its_floating_fields() {
 /// script writing another field bound to the same data, a script writing a page area's field,
 /// a typed value in a plain one-line field, a pick in a drop-down list, and a reset (of a
 /// drop-down list, and of a page area's field that has no widget).
+#[cfg(feature = "js")]
 #[test]
 fn floating_fields_follow_their_data_whoever_writes_it() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12715,6 +12789,7 @@ fn floating_fields_follow_their_data_whoever_writes_it() {
 
 /// A reset gives a hidden floating field its default in every row of a repeating subform, not
 /// only the first, and each row's text shows it.
+#[cfg(feature = "js")]
 #[test]
 fn a_reset_clears_a_floating_field_in_every_row() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12751,6 +12826,7 @@ fn a_reset_clears_a_floating_field_in_every_row() {
 
 /// An XFA button's click script may show the attachments panel; a text field's exit script
 /// asking the same is noted on the console and ignored.
+#[cfg(feature = "js")]
 #[test]
 fn xfa_focus_targets_the_widget_after_relayout() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12781,6 +12857,7 @@ fn xfa_focus_targets_the_widget_after_relayout() {
     assert_eq!(out.requests, [pdfcraft_js::Request::FocusField { name: "note".into(), object_id: crate::js::field_object_id(after) }], "{out:?}");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn an_xfa_button_may_show_a_side_panel_and_other_events_may_not() {
     let xdp = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -12810,6 +12887,7 @@ fn an_xfa_button_may_show_a_side_panel_and_other_events_may_not() {
 
 /// A validate script that asks for Save As and a side panel gets neither, with a console note
 /// for each; a button's script may still open Save As.
+#[cfg(feature = "js")]
 #[test]
 fn a_fields_own_script_may_not_save_as_or_show_a_panel() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -13689,6 +13767,7 @@ fn repeated_backdrop_artwork_survives_background_undo_redo_and_both_save_modes()
 /// A page still exists after its only master widget is hidden: its master nodes stay in the
 /// script model, so a later script can address them again (test from wireless89's review of
 /// #5368).
+#[cfg(feature = "js")]
 #[test]
 fn xfa_page_master_instance_survives_hiding_its_last_widget() {
     let template = pdfcraft_xfa::fixtures::repeated_print_button_template()
@@ -13713,6 +13792,7 @@ fn xfa_page_master_instance_survives_hiding_its_last_widget() {
 
 /// Page-local values and a globally bound control survive relayout, disappearing and
 /// reappearing pages, incremental saves and vector printing (test from wireless89's review of #5368).
+#[cfg(feature = "js")]
 #[test]
 fn xfa_master_values_survive_page_changes_save_reopen_and_print() {
     fn name(s: &Session, id: DocId, som: &str) -> String {
@@ -13782,6 +13862,7 @@ fn xfa_master_values_survive_page_changes_save_reopen_and_print() {
         }
     }
 }
+#[cfg(feature = "js")]
 fn master_round_trip_review_template() -> String {
     let template = pdfcraft_xfa::fixtures::repeated_print_button_template()
         .replace(r#"name="PrintButton1" x="36pt""#, r#"name="PrintButton1" x="480pt""#)
@@ -13804,6 +13885,7 @@ fn master_round_trip_review_template() -> String {
 
 /// Hiding the first, middle, last or every page-master widget keeps every master
 /// instance addressable, live and after save and reopen (wireless89, #5368).
+#[cfg(feature = "js")]
 #[test]
 fn xfa_hidden_master_instances_remain_addressable_across_reopen_matrix() {
     let mut failures = Vec::new();
@@ -14082,6 +14164,7 @@ fn a_batch_that_applies_redactions_and_copies_a_page_is_refused() {
 /// A reset in an opening script reaches a field of a row an earlier opening script added, before
 /// the form is laid out again with the row's widgets: its data goes back to its default and stays
 /// so when the form is saved.
+#[cfg(feature = "js")]
 #[test]
 fn an_opening_reset_reaches_a_row_added_while_opening() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template().replace(
@@ -14105,6 +14188,7 @@ fn an_opening_reset_reaches_a_row_added_while_opening() {
 /// A reset in an opening script reaches an exclusion group of a row an earlier opening script
 /// added, before the row has widgets: the group's data goes back to the on value of its default
 /// button, and stays so when the form is saved.
+#[cfg(feature = "js")]
 #[test]
 fn an_opening_reset_reaches_an_exclusion_group_of_a_row_added_while_opening() {
     let group = r#"<exclGroup name="pick" w="1in" h="0.3in"><field name="a" w="0.5in" h="0.3in"><ui><checkButton/></ui><items><text>A</text></items><value><text>A</text></value></field><field name="b" w="0.5in" h="0.3in"><ui><checkButton/></ui><items><text>B</text></items></field></exclGroup>"#;
@@ -14131,6 +14215,7 @@ fn an_opening_reset_reaches_an_exclusion_group_of_a_row_added_while_opening() {
 /// A reset in an opening script clears a multi-select list of a hidden subform (no widget)
 /// whose picks the data holds as `value` elements: its empty default leaves no pick in the
 /// saved data, and the rest of the data stays as it was.
+#[cfg(feature = "js")]
 #[test]
 fn an_opening_reset_clears_structured_picks_of_a_field_without_a_widget() {
     let tpl = pdfcraft_xfa::fixtures::scripted_template()
@@ -14161,6 +14246,7 @@ fn an_opening_reset_clears_structured_picks_of_a_field_without_a_widget() {
 /// A later opening script resets a section shown by an earlier one, including its datasets
 /// value: the shown field and the saved form hold the template default, not the pre-reset
 /// value, through three save/reopen cycles. Test by wireless89 (review of #4791, 2026-10-27).
+#[cfg(feature = "js")]
 #[test]
 fn xfa_opening_reset_reaches_a_section_shown_by_an_earlier_script() {
     let tpl = r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -14207,6 +14293,7 @@ fn xfa_opening_reset_reaches_a_section_shown_by_an_earlier_script() {
 /// with structured `<value>` picks and an empty or set default, and a single choice whose
 /// default is a display label saved as its export value. Test by wireless89 (review of #4791,
 /// 2026-10-30).
+#[cfg(feature = "js")]
 #[test]
 fn xfa_deferred_choice_resets_preserve_the_reset_value_through_reopen() {
     let cases = [
@@ -14392,6 +14479,7 @@ fn fill_sign_multiline_text_survives_engine_save_reopen_and_render() {
 }
 
 /// An intervening edit gets a fresh realm before calculation, even after the worker has completed.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn pending_button_globals_cannot_leak_into_intervening_edits() {
@@ -14414,6 +14502,7 @@ fn pending_button_globals_cannot_leak_into_intervening_edits() {
     }
 }
 
+#[cfg(feature = "js")]
 /// Shared synthetic reset fixture; scripts are disabled while the document and actions are installed.
 fn reset_order_session(reset: &str) -> (Session, DocId) {
     let mut cos = pdfcraft_cos::Document::open(Arc::new(scripted_form())).unwrap();
@@ -14436,6 +14525,7 @@ fn reset_order_session(reset: &str) -> (Session, DocId) {
     (s, id)
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn an_unavailable_validation_runtime_rejects_the_field_edit() {
     let mut s = Session::new();
@@ -14446,6 +14536,7 @@ fn an_unavailable_validation_runtime_rejects_the_field_edit() {
     assert!(s.get(id).unwrap().can_undo().is_none());
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn opening_reset_recalculates_custom_dependents() {
     let (mut s, id) = reset_order_session("resetForm(['price']);");
@@ -14457,6 +14548,7 @@ fn opening_reset_recalculates_custom_dependents() {
     assert_eq!(doc.form.iter().find(|f| f.name == "total").unwrap().value, ["14"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn batch_reset_recalculates_before_later_validation() {
     let (mut s, id) = reset_order_session("");
@@ -14485,6 +14577,7 @@ fn batch_reset_recalculates_before_later_validation() {
     assert_eq!(value(&s, "total"), ["7"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn reset_draws_the_formatted_default() {
     let (mut s, id) = reset_order_session("");
@@ -14514,6 +14607,7 @@ fn reset_draws_the_formatted_default() {
 }
 
 /// VM limits reject earlier writes in the same script and clear its uncommitted globals.
+#[cfg(feature = "js")]
 #[test]
 fn vm_limit_refuses_partial_script_writes() {
     let (mut s, id) = reset_order_session("");
@@ -14529,6 +14623,7 @@ fn vm_limit_refuses_partial_script_writes() {
 
 /// A script refused before it runs fails on its own, as on `main`: the edit goes through, the
 /// error is reported, and the committed realm is untouched.
+#[cfg(feature = "js")]
 #[test]
 fn preflight_refusal_preserves_committed_callback_state() {
     let (mut s, id) = reset_order_session("");
@@ -14544,6 +14639,7 @@ fn preflight_refusal_preserves_committed_callback_state() {
 }
 
 /// Validation can reject an edit without hitting a runtime limit.
+#[cfg(feature = "js")]
 #[test]
 fn validation_rejection_discards_callback_side_effects() {
     let (mut s, id) = reset_order_session("");
@@ -14558,6 +14654,7 @@ fn validation_rejection_discards_callback_side_effects() {
 }
 
 /// Replacing a document realm while a prompt is outstanding cannot spawn a second worker.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn invalidated_prompt_retains_the_documents_worker_until_completion() {
@@ -14582,6 +14679,7 @@ fn invalidated_prompt_retains_the_documents_worker_until_completion() {
     assert_eq!(s.run_javascript(id, "typeof discarded;", None).unwrap().result.as_deref(), Some("undefined"));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_budget_refusal_discards_pdf_edits_and_callback_globals() {
     let (mut s, id) = reset_order_session("");
@@ -14599,6 +14697,7 @@ fn a_budget_refusal_discards_pdf_edits_and_callback_globals() {
 /// A batch whose field scripts ran and that a redaction check then refuses leaves the script realm
 /// as it was, like the document: here the check that a deleted marked page can't be tied to the
 /// pages the batch added.
+#[cfg(feature = "js")]
 #[test]
 fn a_batch_a_redaction_check_refuses_discards_callback_globals() {
     let (mut s, id) = reset_order_session("");
@@ -14621,6 +14720,7 @@ fn a_batch_a_redaction_check_refuses_discards_callback_globals() {
     assert_eq!(s.run_javascript(id, "typeof fromRefusedBatch;", None).unwrap().result.as_deref(), Some("undefined"));
 }
 
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn timeout_after_undo_releases_the_stale_script_runtime() {
@@ -14633,6 +14733,7 @@ fn timeout_after_undo_releases_the_stale_script_runtime() {
     assert_eq!(s.run_javascript(id, "2+2", None).unwrap().result.as_deref(), Some("4"));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_no_op_opening_reset_leaves_the_document_clean() {
     let (mut s, id) = reset_order_session("resetForm(['price']);");
@@ -14645,6 +14746,7 @@ fn a_no_op_opening_reset_leaves_the_document_clean() {
 }
 
 /// Reinitialization resets before the first event reads, while later writes survive save and Undo/Redo.
+#[cfg(feature = "js")]
 #[test]
 fn doc_open_reset_and_first_event_persist_in_script_order() {
     for reset in ["resetForm();", "resetForm(['price']);"] {
@@ -14676,6 +14778,7 @@ fn doc_open_reset_and_first_event_persist_in_script_order() {
 }
 
 /// Reset comparison includes unnamed built-in dependents and never runs custom calculations in the preview.
+#[cfg(feature = "js")]
 #[test]
 fn reset_baseline_includes_builtin_dependents_without_custom_preview_runs() {
     use form_scripts::{CalcOp, Calculate};
@@ -14737,6 +14840,7 @@ fn reset_baseline_includes_builtin_dependents_without_custom_preview_runs() {
 }
 
 /// Native completions preserve reset/default/restore ordering and persist the resulting values.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn native_reset_completion_preserves_values_and_atomic_undo() {
@@ -14773,6 +14877,7 @@ fn native_reset_completion_preserves_values_and_atomic_undo() {
 }
 
 /// Over-budget native results are rejected before resetting or committing any PDF edits.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn native_reset_flood_is_rejected_without_changing_the_document() {
@@ -14799,6 +14904,7 @@ fn native_reset_flood_is_rejected_without_changing_the_document() {
 }
 
 /// The aggregate budget also rejects expensive batches below the reset-count cap.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn native_reset_aggregate_work_is_bounded() {
@@ -14818,6 +14924,7 @@ fn native_reset_aggregate_work_is_bounded() {
 }
 
 /// A huge selector list must be rejected before copying requests or expanding names against fields.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn native_reset_selector_count_is_bounded() {
@@ -14835,6 +14942,7 @@ fn native_reset_selector_count_is_bounded() {
 }
 
 /// An unread default is preserved by both reset paths; explicit script assignments still win.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn javascript_reset_preserves_unknown_default_like_native_reset() {
@@ -14920,6 +15028,7 @@ fn javascript_reset_preserves_unknown_default_like_native_reset() {
 }
 
 /// Exhausting the shared default decode budget must also reach the JavaScript snapshot as unknown.
+#[cfg(feature = "js")]
 #[test]
 fn javascript_snapshot_preserves_default_decode_budget_exhaustion() {
     let mut cos = pdfcraft_cos::Document::open(Arc::new(scripted_form())).unwrap();
@@ -14960,6 +15069,7 @@ fn javascript_snapshot_preserves_default_decode_budget_exhaustion() {
 }
 
 /// Immediate dependent reads can explicitly request calculation without changing reset callback ordering.
+#[cfg(feature = "js")]
 #[test]
 fn calculate_now_after_reset_reads_and_persists_recalculated_dependents() {
     use form_scripts::{CalcOp, Calculate};
@@ -14984,6 +15094,7 @@ fn calculate_now_after_reset_reads_and_persists_recalculated_dependents() {
 }
 
 /// Duplicate names retain distinct Calculate scripts, targets and persisted values.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn calculate_now_preserves_duplicate_field_object_identity() {
@@ -15061,6 +15172,7 @@ fn calculate_now_preserves_duplicate_field_object_identity() {
     }
 }
 
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn script_colors_do_not_mutate_another_fields_shared_mk() {
@@ -15179,6 +15291,7 @@ fn script_colors_do_not_mutate_another_fields_shared_mk() {
     }
 }
 
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn exact_button_target_ids_are_validated_before_script_execution() {
@@ -15247,6 +15360,7 @@ fn imported_bookmarks_undo_in_one_step() {
 }
 
 /// Rejected host writeback must invalidate globals for both synchronous and native completion.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn refused_script_writeback_retires_the_runtime() {
@@ -15269,6 +15383,7 @@ fn refused_script_writeback_retires_the_runtime() {
     }
 }
 /// History retires removed fields without discarding document globals or aliasing reused numbers.
+#[cfg(feature = "js")]
 #[test]
 fn undo_removed_field_references_cannot_write_replacement_fields() {
     let (mut s, id) = session_with(1);
@@ -15336,6 +15451,7 @@ fn exact_image_import_targets_only_the_selected_duplicate_button() {
 }
 
 /// Native automatic calculations and explicit calculateNow agree on the first selected value.
+#[cfg(feature = "js")]
 #[test]
 fn multiselect_calculation_matches_explicit_script_and_saved_result() {
     let (mut s, id) = session_with(1);
@@ -15368,6 +15484,7 @@ fn multiselect_calculation_matches_explicit_script_and_saved_result() {
 }
 
 /// Real mixed widgets converge even when buttonSetIcon repeats widget zero's existing icon.
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn mixed_widget_icons_are_normalized_with_history_and_save() {
@@ -15602,6 +15719,7 @@ fn a_document_encrypting_only_its_embedded_files_opens_and_saves_without_a_passw
     assert!(reopened.embedded_files_locked(), "the attachment stays encrypted");
 }
 
+#[cfg(feature = "js")]
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn script_objects_survive_incremental_save_but_not_a_full_rewrite() {
@@ -15621,6 +15739,7 @@ fn script_objects_survive_incremental_save_but_not_a_full_rewrite() {
     assert_eq!(after_full.result.as_deref(), Some("undefined:17"));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculate_now_applies_format_script_to_updated_appearance() {
     let mut session = Session::new().with_clock(|| 1_700_000_000);
@@ -15631,6 +15750,7 @@ fn calculate_now_applies_format_script_to_updated_appearance() {
     assert!(page_texts(&session, id)[0].contains("USD 6.00"), "the appearance uses the Format script");
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn javascript_non_rgb_field_colours_convert_and_keep_the_scripts_other_changes() {
     let fill_after = |colour: &str| {
@@ -15665,6 +15785,7 @@ fn javascript_non_rgb_field_colours_convert_and_keep_the_scripts_other_changes()
     }
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_later_field_script_in_the_same_edit_reads_a_colour_an_earlier_one_wrote() {
     let mut s = Session::new().with_clock(|| 1_700_000_000);
@@ -15681,6 +15802,7 @@ fn a_later_field_script_in_the_same_edit_reads_a_colour_an_earlier_one_wrote() {
     assert_eq!(total, ["RGB,0,1,0"]);
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn a_document_script_helper_can_set_field_colours() {
     let helpers = "function mark\\(name\\) { getField\\(name\\).fillColor = color.red; }";
@@ -15692,6 +15814,7 @@ fn a_document_script_helper_can_set_field_colours() {
     assert_eq!(pdfcraft_forms::look(&doc, &f).fill, Some([1.0, 0.0, 0.0]));
 }
 
+#[cfg(feature = "js")]
 #[test]
 fn calculate_now_simple_calculation_reads_formatted_values_and_groups_as_the_native_path_does() {
     // amount (4), group b (5) with kids b.c (6) and b.d (7), total (8) = SUM(amount, b).

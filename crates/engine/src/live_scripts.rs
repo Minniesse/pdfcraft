@@ -3,6 +3,9 @@
 //! viewer's clock, and what they show or hide (an animation's frames) changes only the view.
 //! Everything runs in the document's script realm (#5699), shared with its buttons.
 
+#[cfg(not(feature = "js"))]
+use crate::pdfcraft_js;
+
 use std::collections::BTreeMap;
 
 use pdfcraft_js::{Outcome, Request};
@@ -325,7 +328,7 @@ impl Session {
     /// changed; call it as often as the page can change. With JavaScript off nothing runs.
     pub fn show_page(&mut self, id: DocId, page: usize, now_ms: f64) -> ScriptRun {
         let mut run = ScriptRun::default();
-        let js_off = self.js_off;
+        let js_off = self.js_off();
         let Some(doc) = self.docs.iter_mut().find(|d| d.id == id) else { return run };
         doc.live.clock = now_ms;
         if js_off || doc.live.page == Some(page) || doc.xfa_template.is_some() {
@@ -349,7 +352,7 @@ impl Session {
     /// When document `id`'s next timer falls due, on the clock [`Session::show_page`] and
     /// [`Session::run_timers`] are given; `None` without timers (or with JavaScript off).
     pub fn next_timer(&mut self, id: DocId) -> Option<f64> {
-        if self.js_off {
+        if self.js_off() {
             return None;
         }
         let doc = self.docs.iter_mut().find(|d| d.id == id)?;
@@ -373,7 +376,7 @@ impl Session {
             doc.live.clock = now_ms;
         }
         for _ in 0..max.min(MAX_TIMER_RUNS) {
-            if self.js_off {
+            if self.js_off() {
                 break;
             }
             let Some(doc) = self.docs.iter_mut().find(|d| d.id == id) else { break };
@@ -413,5 +416,6 @@ impl Document {
 }
 
 #[cfg(test)]
+#[cfg(feature = "js")]
 #[path = "live_scripts_tests.rs"]
 mod tests;

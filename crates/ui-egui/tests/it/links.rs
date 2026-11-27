@@ -1,5 +1,5 @@
-//! Community links: the About dialog shows the credits, and the home screen's community card
-//! closes for the run.
+//! Links: the About dialog shows the credits, and the home screen names the app in plain text with
+//! no community card.
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
@@ -20,16 +20,13 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, P
 }
 
 #[test]
-fn home_community_card_closes_for_this_run() {
-    let mut h = harness(|_| {});
-    h.get_by_role_and_label(egui::accesskit::Role::Group, "Join the ArtCraft community");
-    h.get_by_role_and_label(egui::accesskit::Role::Group, "Join the ArtCraft community").get_by_label("Close").click();
-    h.run_steps(2);
-    assert!(h.state().community_card_closed);
-    assert!(h.query_by_label("Join the ArtCraft community").is_none());
-    assert!(h.query_by_label("Join our Discord").is_none());
-    // Not remembered: a fresh app shows the card again.
-    assert!(!crate::control::new_app().community_card_closed);
+fn home_names_the_app_in_plain_text_and_has_no_community_card() {
+    let h = harness(|_| {});
+    // The app's name is the home screen's heading, as text; no mark or community card is shown.
+    h.get_by_label("Welcome to PdfCraft");
+    for gone in ["community", "Discord"] {
+        assert!(h.query_all_by_label_contains(gone).next().is_none(), "{gone:?} is still shown");
+    }
 }
 
 /// Runs frames until the node labelled `label` exists and has stopped moving, then returns it. A table row is named by
@@ -66,4 +63,14 @@ fn about_dialog_has_contributors_and_models_tabs() {
     settled(&mut h, "Models").click();
     h.run_steps(4);
     assert!(h.query_all_by_label("Anthropic").count() >= 1);
+}
+
+/// Without the script engine (the `js` feature) Preferences has no JavaScript page to turn it on.
+#[cfg(not(feature = "js"))]
+#[test]
+fn preferences_offer_no_javascript_page_without_the_engine() {
+    let mut h = harness(|app| app.set_option(&egui::Context::default(), "dialog", "preferences").unwrap());
+    settled(&mut h, "Fill & Sign");
+    assert!(h.query_all_by_label("Enable Acrobat JavaScript").next().is_none(), "the JavaScript switch is offered");
+    assert!(h.query_all_by_label("JavaScript").next().is_none(), "a JavaScript page is offered");
 }

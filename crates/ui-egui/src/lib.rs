@@ -86,7 +86,6 @@ pub use workflows::js_dialogs::JsDialog;
 pub use workflows::ocr_verify::{OcrVerify, Phase};
 
 mod app;
-pub(crate) mod brand;
 pub(crate) mod colour_picker;
 pub(crate) mod credits_data;
 pub mod fonts;
@@ -731,8 +730,6 @@ pub struct PdfCraftApp {
     /// host's file), held while a prompt, dialog or open is under way so that they don't take its
     /// place.
     pub(crate) startup_files: Vec<(String, std::sync::Arc<[u8]>)>,
-    /// The home screen's community card was closed; it comes back next launch (not remembered).
-    pub community_card_closed: bool,
     /// A document asked to open this address; the user hasn't answered yet (#90, #91).
     pub pending_link: Option<PendingLink>,
     /// A document just opened asks for its window to fit its first page or to be centred
